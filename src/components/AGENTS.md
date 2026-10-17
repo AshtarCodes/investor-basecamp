@@ -5,3 +5,7 @@ shadcn/ui is the component source. `components.json` is its config. Add a compon
 App components sit next to `ui/`. `cn` comes from `src/lib/utils.ts`.
 
 Component tests follow the component layer in `tests/AGENTS.md`.
+
+## Docs
+
+shadcn/ui: https://ui.shadcn.com/llms.txt

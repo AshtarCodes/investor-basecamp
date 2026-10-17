@@ -32,3 +32,17 @@ Scaffold when `package.json` is missing: `docs/agents/setup.md`.
 Oxlint lints. Type-aware rules come from `oxlint-tsgolint` built for the same TypeScript 7 that `tsc` typechecks with. Knip v6 reports unused files, exports, and dependencies; clear a report by removing that code or dependency. Lefthook runs Oxlint on staged files at commit, and runs `tsc`, Vitest, and Knip at push.
 
 A tool that imports the TypeScript programmatic API is satisfied with `@typescript/typescript6` beside the TypeScript 7 compiler, using the alias from the TypeScript 7 announcement, so `tsc` stays on 7.
+
+## Docs
+
+Prefer a library's `llms.txt` when looking it up. The link for an area library is in that directory's `AGENTS.md`.
+
+Knip: https://www.everydev.ai/tools/knip/llms.txt
+
+TypeScript 7, Oxlint, and Lefthook have no `llms.txt`:
+
+- TypeScript: https://www.typescriptlang.org/docs/
+- Oxlint: https://oxc.rs/docs/guide/usage/linter.html
+- Lefthook: https://lefthook.dev/
+
+React Testing Library, MSW, and Playwright have no `llms.txt`. Their links are in `tests/AGENTS.md` and `e2e/AGENTS.md`.

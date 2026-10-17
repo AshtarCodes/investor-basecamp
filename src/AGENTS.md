@@ -11,3 +11,8 @@ A loader loads what the route needs before paint. A server function is the serve
 ## Session gate
 
 A page or server function that requires a session follows `src/lib/AGENTS.md`.
+
+## Docs
+
+- TanStack Start: https://tanstack.com/start/latest/llms.txt
+- TanStack Query: https://tanstack.com/query/latest/llms.txt

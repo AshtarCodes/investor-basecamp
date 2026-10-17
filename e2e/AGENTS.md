@@ -5,3 +5,7 @@ Playwright covers a journey a user can take: navigation, forms, and a session th
 A signed-in spec starts from storage state produced by the sign-in UI against the app's test database. The setup project signs in once and writes that state; later specs reuse the file.
 
 One behavior, one spec. Assert what the user sees after the action. Vitest layers for the pieces of the flow stay in `tests/AGENTS.md`.
+
+## Docs
+
+Playwright: https://playwright.dev/docs/intro

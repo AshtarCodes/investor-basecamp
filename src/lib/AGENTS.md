@@ -9,3 +9,7 @@ Self-hosted Better Auth. Server instance: `src/lib/auth.ts`. Browser client: `sr
 `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` come from the environment. The secret stays out of git. Schema generation for these tables is in `src/db/AGENTS.md`.
 
 `src/lib/utils.ts` is the shadcn `cn` helper; its rules are in `src/components/AGENTS.md`.
+
+## Docs
+
+Better Auth: https://www.better-auth.com/llms.txt

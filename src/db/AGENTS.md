@@ -11,3 +11,7 @@ SQLite through Drizzle and `better-sqlite3`. `src/db/index.ts` is the app client
 ## Tests
 
 Service tests use the in-memory factory in `tests/AGENTS.md`. This singleton stays the app database.
+
+## Docs
+
+Drizzle ORM: https://orm.drizzle.team/llms.txt

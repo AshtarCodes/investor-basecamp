@@ -18,3 +18,9 @@ A change ships with the layer that can fail it.
 Shared setup lives in this directory: a render helper that mounts the same Query client the app uses, an MSW server, and a database factory. The factory opens `better-sqlite3` on `:memory:`, applies the Drizzle migrations, and returns a Drizzle client. Each service test gets its own database. MSW handlers for a test live next to that test; the server lifecycle is shared.
 
 Component tests render the component with its props. A test of a route is the one that mounts the router.
+
+## Docs
+
+- Vitest: https://vitest.dev/llms.txt
+- React Testing Library: https://testing-library.com/docs/react-testing-library/intro
+- MSW: https://mswjs.io/docs/
