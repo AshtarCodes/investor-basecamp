@@ -14,5 +14,6 @@ A page or server function that requires a session follows `src/lib/AGENTS.md`.
 
 ## Docs
 
+- TanStack: https://tanstack.com/llms.txt
 - TanStack Start: https://tanstack.com/start/latest/llms.txt
 - TanStack Query: https://tanstack.com/query/latest/llms.txt
