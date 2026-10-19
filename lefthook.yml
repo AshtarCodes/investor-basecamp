@@ -1,0 +1,15 @@
+pre-commit:
+  jobs:
+    - name: oxlint
+      glob: "*.{js,jsx,ts,tsx}"
+      run: pnpm exec oxlint --type-aware --deny-warnings {staged_files}
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: tsc
+      run: pnpm exec tsc --noEmit
+    - name: vitest
+      run: pnpm exec vitest run
+    - name: knip
+      run: pnpm exec knip

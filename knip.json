@@ -1,0 +1,6 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "playwright": {
+    "entry": ["e2e/**/*.spec.ts", "e2e/**/*.setup.ts"]
+  }
+}

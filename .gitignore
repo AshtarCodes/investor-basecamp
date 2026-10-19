@@ -1,0 +1,17 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+*.db
+*.db-journal
+/test-results
+/playwright-report
+/e2e/.auth
