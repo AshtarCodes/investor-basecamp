@@ -38,11 +38,18 @@ def _client() -> tuple[BitwardenClient, str]:
 
 def _secret_value(client: BitwardenClient, org_id: str, key: str) -> str:
     listed = client.secrets().list(org_id)
-    match = next((item for item in listed.data if item.key == key), None)
+    if not listed.success or listed.data is None:
+        msg = "Bitwarden secret list failed."
+        raise BitwardenSecretsError(listed.error_message or msg)
+    identifiers = listed.data.data
+    match = next((item for item in identifiers if item.key == key), None)
     if match is None:
         msg = f"Bitwarden secret {key!r} was not found in the organization."
         raise BitwardenSecretsError(msg)
     fetched = client.secrets().get(str(match.id))
+    if not fetched.success or fetched.data is None:
+        msg = f"Bitwarden could not fetch secret {key!r}."
+        raise BitwardenSecretsError(fetched.error_message or msg)
     value = fetched.data.value
     if not value:
         msg = f"Bitwarden secret {key!r} has an empty value."

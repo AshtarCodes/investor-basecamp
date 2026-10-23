@@ -37,7 +37,11 @@ def read_generic_password(*, service: str, account: str | None = None) -> str:
         if detail:
             msg = f"{msg} ({detail})"
         raise KeychainError(msg) from exc
-    return completed.stdout.rstrip("\n")
+    value = completed.stdout.rstrip("\n")
+    if not value:
+        msg = f"Keychain item for service {service!r} has an empty secret."
+        raise KeychainError(msg)
+    return value
 
 
 def write_generic_password(
@@ -54,6 +58,8 @@ def write_generic_password(
         account,
         "-s",
         service,
+        "-w",
+        secret,
         "-U",
     ]
     try:
@@ -62,7 +68,6 @@ def write_generic_password(
             check=True,
             capture_output=True,
             text=True,
-            input=secret,
         )
     except subprocess.CalledProcessError as exc:
         detail = (exc.stderr or exc.stdout or "").strip()
@@ -93,3 +98,10 @@ def write_schwab_token_blob(blob: str) -> None:
         account=KEYCHAIN_SCHWAB_ACCOUNT,
         secret=blob,
     )
+    readback = read_schwab_token_blob()
+    if readback != blob:
+        msg = (
+            "Schwab OAuth tokens were not stored correctly in Keychain. "
+            "Try `pnpm schwab login` again."
+        )
+        raise KeychainError(msg)

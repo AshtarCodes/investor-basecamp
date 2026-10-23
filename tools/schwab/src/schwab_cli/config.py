@@ -40,8 +40,8 @@ def bws_state_path() -> Path:
 
 
 def tls_cert_path() -> Path:
-    return local_schwab_dir() / "tls" / "cert.pem"
+    return local_schwab_dir() / "certificates" / "cert.pem"
 
 
 def tls_key_path() -> Path:
-    return local_schwab_dir() / "tls" / "key.pem"
+    return local_schwab_dir() / "certificates" / "key.pem"

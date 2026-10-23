@@ -11,11 +11,12 @@ Python CLI for Schwab Trader API exploration. Invoked from the repo root as `pnp
 ## One-time setup
 
 1. Store Bitwarden machine-account credentials in Keychain (items `bws-access-token` and `bws-org-id`).
-2. Mint a loopback TLS certificate (keep mkcert’s root CA in mkcert’s CAROOT only — never commit or sync it):
+2. Mint a loopback TLS certificate for the OAuth listener. **mkcert’s root CA** lives only in mkcert’s CAROOT (`mkcert -CAROOT`); never copy that into the repo or a synced folder. The **leaf** cert and key for `127.0.0.1` go under `.local/schwab/certificates/` (gitignored with the rest of `.local/`):
 
 ```bash
-mkdir -p .local/schwab/tls
-mkcert -key-file .local/schwab/tls/key.pem -cert-file .local/schwab/tls/cert.pem 127.0.0.1
+mkdir -p .local/schwab/certificates
+mkcert -key-file .local/schwab/certificates/key.pem \
+  -cert-file .local/schwab/certificates/cert.pem 127.0.0.1
 ```
 
 ## Commands
