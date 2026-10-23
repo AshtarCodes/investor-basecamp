@@ -1,7 +1,7 @@
 # Pull real Schwab payloads for your accounts
 
 Type: task
-Status: claimed
+Status: ready-for-human
 Blocked by: 04
 
 ## Question
@@ -42,4 +42,6 @@ A **Capture** is one saved response, written under `.local/schwab/captures/`, wh
 
 An **Observation** is a fact read off one or more Captures. Observations are checked in at `docs/schwab/observations.md`: field paths, types, units, symbol roots, and the Capture filename and date. Quantities, prices, cash, and account hashes are placeholders. The CLI does not write that file. Capture, Observation, and account hash stay out of `GLOSSARY.md`. A Capture is not a Snapshot.
 
-**2026-10-23, implemented:** Python CLI at `tools/schwab/` (`pnpm schwab`). Commands `login`, `get`, `capture`. Bitwarden via `bitwarden-sdk` and Keychain `bws-access-token` / `bws-org-id`. Schwab tokens in Keychain `investor-basecamp` / `schwab`. Captures under `.local/schwab/captures/`. Ticket questions still need a human `capture` run and `docs/schwab/observations.md`.
+**2026-10-23, implemented:** Python CLI at `tools/schwab/` (`pnpm schwab`). Commands `login`, `get`, `capture`. Bitwarden via `bitwarden-sdk` and Keychain `bws-access-token` / `bws-org-id`. Schwab tokens in Keychain `investor-basecamp` / `schwab`. Captures under `.local/schwab/captures/`.
+
+**2026-10-23, capture run:** Live `capture` for `IREN` / `IREN  261023P00022000` (20261023T140603Z–140605Z). Observations in [docs/schwab/observations.md](../../../docs/schwab/observations.md). **Human follow-up:** TOS IV/greek spot-check; second capture on a dividend-paying `--equity`; confirm cash/IRA balance fields if those account types exist; index option symbol if you hold SPX/XSP.
