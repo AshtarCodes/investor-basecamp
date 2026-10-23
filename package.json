@@ -24,7 +24,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "schwab": "uv run --project tools/schwab schwab"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

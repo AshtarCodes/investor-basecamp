@@ -3,6 +3,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.local/
 .env
 .nitro
 .tanstack
@@ -15,3 +16,7 @@ __unconfig*
 /test-results
 /playwright-report
 /e2e/.auth
+__pycache__/
+.pytest_cache/
+*.py[cod]
+tools/schwab/.venv/
