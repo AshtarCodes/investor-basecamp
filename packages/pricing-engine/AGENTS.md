@@ -26,6 +26,12 @@ A standalone `uv` project: QuantLib and pydantic v2, Python 3.13. [ADR 0001](../
 - An explicit forward moves with spot when spot is bumped (so delta is per share of spot); rho and theta hold it fixed, so rho moves only the discount factor.
 - Units: vega per vol point, theta per calendar day, rho per percentage point of rate. σ and rates are decimals.
 
+## Against Schwab's values
+
+Do not expect our IV to equal Schwab's. On two long-dated IREN calls (no dividends) the Greeks agreed within about 1%, but Schwab's IV was 0.7 to 0.8 vol point higher for the same Mark, and the cause is unknown. Because every base value is solved from the Mark, this moves Shock P/L by only about 0.2% to 2% of the largest Shock P/L.
+
+**Short-dated, low-priced options are noisier.** A gap of about a day is a large share of a 3 to 7 day life, and a few cents is a large share of a small Mark: on a 7-day put the gap was 56% of its Mark but about 2% of its worst Shock P/L. Treat per-contract IV and per-contract Shock P/L on those options as less reliable, and do not compare them to Schwab's figures to the cent. Dividend-paying American options are untested and expected to differ more. Evidence and method: `docs/research/pricing-engine-vs-schwab-iren.md`.
+
 ## Tests
 
 Test at the public functions only, against independent oracles: Haug's tabulated values, a closed-form Black-Scholes-Merton written in `tests/support.py`, a 4,000-step CRR tree, and QuantLib's own engine values. No test uses the network. `bench/grid.py` is the 50 Position by 100 Shock timing script, not a test.
