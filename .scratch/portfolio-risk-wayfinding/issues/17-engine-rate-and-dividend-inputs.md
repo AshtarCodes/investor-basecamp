@@ -35,7 +35,7 @@ Other frequencies (1, 2, 12) are out of scope until a held name needs them; retu
 - Rate at an exact quoted tenor equals the converted yield to 1e-9. Using the saved 2026-10-23 curve (1 month 4.11, 3 months 4.22, 6 months 4.30, 1 year 4.44), the 3-month rate is `2·ln(1.0211)`.
 - Rate between tenors is linear, and flat outside them (a 2-week expiry uses the 1-month rate).
 - The fixture is a saved copy of the 2026-10 XML; no test needs the network. A separate test covers the empty-month fallback with a fixture whose month has no entries.
-- SPY-shaped quote (`divFreq` 4, ex-date 2026-12-18, pay amount 1.88883) and an expiry in 2027-06 gives four dated dividends on the 3-month grid.
+- SPY-shaped quote (`divFreq` 4, ex-date 2026-12-18, pay amount 1.88883) and an expiry of 2027-06-30 gives three dated dividends: 2026-12-18, 2027-03-18 and 2027-06-18.
 - SATA-shaped quote returns `needs-continuous-yield`; IREN-shaped (all zero) returns `none`.
 - An American put priced with the SPY-shaped schedule is worth more than the same put with no dividends.
 
