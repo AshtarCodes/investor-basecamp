@@ -1,6 +1,6 @@
 # Pricing engine
 
-A standalone `uv` project: QuantLib and pydantic v2, Python 3.13. [ADR 0001](../../docs/adr/0001-own-pricing-model.md) sets the model and [ADR 0007](../../docs/adr/0007-pricing-engine-is-a-python-worker.md) sets where it runs. The engine does no network I/O. Use the terms in `GLOSSARY.md`: Mark, Mark-implied IV, Settlement instant, Remaining life.
+A standalone `uv` project: QuantLib and pydantic v2, Python 3.13. [ADR 0001](../../docs/adr/0001-own-pricing-model.md) sets the model and [ADR 0007](../../docs/adr/0007-pricing-engine-is-a-python-worker.md) sets where it runs. Only `treasury.py` does I/O (the network, and an optional disk cache); everything else is pure. Use the terms in `GLOSSARY.md`: Mark, Mark-implied IV, Settlement instant, Remaining life.
 
 ## Tooling
 
@@ -10,7 +10,8 @@ A standalone `uv` project: QuantLib and pydantic v2, Python 3.13. [ADR 0001](../
 
 ## Shape
 
-- `price(PriceRequest) -> PriceResult` in `pricer.py` is the one entry point. It prices at a known σ, or solves the Mark-implied IV from a Mark and prices at that. `settlement_instant` and `parity_forward` are the other public functions.
+- `price(PriceRequest) -> PriceResult` in `pricer.py` is the one entry point. It prices at a known σ, or solves the Mark-implied IV from a Mark and prices at that. `settlement_instant`, `parity_forward`, `parse_curve`, `TreasuryCurves` and `project_dividends` are the other public names.
+- `treasury.py` and `dividends.py` build the rate and dividend inputs; the callers (the CLI and the app) map Schwab payloads into their arguments. `TreasuryCurves.rate` returns a `RateQuote` (a `Sourced` rate plus the curve date): the Treasury.gov par curve as continuous rates, linear in tenor and flat past the ends, or the caller's Schwab-chain fallback flagged `schwab-chain-fallback`. `project_dividends` returns a rule name and the cash dividends. A stale quarterly `nextDivExDate` rolls forward, `divFreq` 0 with a yield asks the caller for a continuous yield (SATA pays daily), and other frequencies are `unsupported-frequency`.
 - `models.py` holds the pydantic request and result models. Every numeric input (spot, rate, σ, Mark, yield, borrow rate, forward) is a `Sourced` value, a number with a `from` provenance string, and each cash dividend carries its own `from`. The result echoes them.
 - `schema/*.json` is the committed JSON Schema the server generates its TypeScript types from. After changing `models.py` run `pnpm --filter pricing-engine schema`; a test fails while the committed files are stale.
 - `problem.py` is one resolved problem in years from the valuation moment. `model.py` picks the model and values it. Greeks (`greeks.py`) and IV (`iv.py`) reprice through `model.value`, so they share its code path.
@@ -34,7 +35,11 @@ Do not expect our IV to equal Schwab's. On two long-dated IREN calls (no dividen
 
 ## Tests
 
-Test at the public functions only, against independent oracles: Haug's tabulated values, a closed-form Black-Scholes-Merton written in `tests/support.py`, a 4,000-step CRR tree, and QuantLib's own engine values. No test uses the network. `bench/grid.py` is the 50 Position by 100 Shock timing script, not a test.
+Test at the public functions only, against independent oracles: Haug's tabulated values, a closed-form Black-Scholes-Merton written in `tests/support.py`, a 4,000-step CRR tree, and QuantLib's own engine values. No test uses the network: `TreasuryCurves` takes a fetch function and the tests pass saved Treasury.gov months from `tests/fixtures/`. `bench/grid.py` is the 50 Position by 100 Shock timing script, not a test.
+
+## Treasury.gov
+
+The XML feed is keyless but holds a request whose `User-Agent` is a stock client's (urllib's, curl's) for about 18 s, and answers one that names itself in 0.2 s. `fetch_month` sets its own.
 
 ## Docs
 

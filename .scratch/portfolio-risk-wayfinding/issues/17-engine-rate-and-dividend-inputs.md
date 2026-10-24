@@ -1,7 +1,7 @@
 # Engine inputs: Treasury rate and dividend schedule
 
 Type: task
-Status: ready-for-agent
+Status: resolved
 
 Blocked by: [16](16-pricing-engine-package.md) (needs the package scaffold and the inputs model)
 
@@ -42,3 +42,22 @@ Other frequencies (1, 2, 12) are out of scope until a held name needs them; retu
 ## Out of scope
 
 - Mapping Schwab payloads into these arguments (done by the callers: [14](14-schwab-option-price-cli.md) and the app); discrete dividends other than quarterly; borrow rates (an input in [16](16-pricing-engine-package.md), defaulting to 0).
+
+## Answer
+
+Added `treasury.py` and `dividends.py` to `packages/pricing-engine/`. `TreasuryCurves.rate(valuation_date, expiry, fallback_percent)` returns a `RateQuote`: a `Sourced` rate plus `curveDate`. `project_dividends(...)` returns a rule name and the cash dividends. Tests run offline against a saved copy of the 2026-10 XML and the empty 2026-11 month.
+
+Decisions the ticket left open:
+
+- **Tenor:** calendar days from the valuation date to the expiry, over 365. Months are months/12, `BC_1_5MONTH` and `BC_4MONTH` are used, and `BC_30YEARDISPLAY` is ignored.
+- **Fetching:** stdlib `urllib` with a `fetch(month)` function passed in, so tests need no network. A month with no entries falls back to the previous month. Network or parse failures use the caller's fallback, and raise `TreasuryError` when the caller passes none. An empty month is never cached.
+- **User agent:** Treasury.gov holds requests with a stock `User-Agent` (urllib's or curl's) for about 18 s. A request that names itself takes 0.2 s, so `fetch_month` sets one.
+- **Stale ex-date:** on 2026-10-24 Schwab reported SATA's `nextDivExDate` as 2026-10-22, already past. A quarterly schedule rolls it forward a quarter at a time, flagged `rolled_forward`. SATA stays `needs-continuous-yield`, since it pays daily.
+- **Other rules:** `missing-ex-date` for `divFreq` 4 with no ex-date. An ex-date on the expiry counts. An ex-date today is kept, and the engine judges it by the clock. Quarters step from the first ex-date, so month ends clamp without drifting (Nov 30, Feb 28, May 31). Each dividend's `from` is `schwab:quarterly-from-next-ex-date`.
+
+Compared with Schwab on 2026-10-24:
+
+- SPY's dividend fields match the ticket.
+- Schwab's chain `interestRate` of 4.032 sits below every Treasury tenor, so it stays the fallback.
+- The live Treasury rate to 2027-06-30 is 4.304%.
+- An American SPY put struck at 800, expiring 2027-06-30, is worth 55.16 with the SPY schedule against 53.27 with none. I ran this ad hoc, since `price()` wasn't an agreed test seam.
