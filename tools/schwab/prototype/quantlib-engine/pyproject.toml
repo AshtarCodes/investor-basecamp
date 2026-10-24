@@ -1,0 +1,9 @@
+[project]
+name = "ql-spike"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.5.4",
+    "quantlib>=1.44",
+    "scipy>=1.18.1",
+]
