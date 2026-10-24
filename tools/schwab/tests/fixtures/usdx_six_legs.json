@@ -1,0 +1,50 @@
+{
+  "EUR/USD": {
+    "assetMainType": "FOREX",
+    "symbol": "EUR/USD",
+    "quote": {
+      "mark": 1.119495,
+      "quoteTime": 1730000000000
+    }
+  },
+  "USD/JPY": {
+    "assetMainType": "FOREX",
+    "symbol": "USD/JPY",
+    "quote": {
+      "mark": 156.8545,
+      "quoteTime": 1730000001000
+    }
+  },
+  "GBP/USD": {
+    "assetMainType": "FOREX",
+    "symbol": "GBP/USD",
+    "quote": {
+      "mark": 1.33732,
+      "quoteTime": 1730000002000
+    }
+  },
+  "USD/CAD": {
+    "assetMainType": "FOREX",
+    "symbol": "USD/CAD",
+    "quote": {
+      "mark": 1.399905,
+      "quoteTime": 1730000003000
+    }
+  },
+  "USD/SEK": {
+    "assetMainType": "FOREX",
+    "symbol": "USD/SEK",
+    "quote": {
+      "mark": 9.94052,
+      "quoteTime": 1730000004000
+    }
+  },
+  "USD/CHF": {
+    "assetMainType": "FOREX",
+    "symbol": "USD/CHF",
+    "quote": {
+      "mark": 0.825245,
+      "quoteTime": 1730000005000
+    }
+  }
+}

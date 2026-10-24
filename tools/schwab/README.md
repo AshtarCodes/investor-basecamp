@@ -25,6 +25,9 @@ mkcert -key-file .local/schwab/certificates/key.pem \
 pnpm schwab login
 pnpm schwab get /trader/v1/accounts/accountNumbers
 pnpm schwab capture --option '<OCC>' --equity AAPL
+pnpm schwab macro dxy
 ```
 
 Captures are written under `.local/schwab/captures/` (gitignored). Schwab OAuth tokens live in Keychain (`investor-basecamp` / `schwab`).
+
+**Macro:** `macro dxy` computes ICE USDX from six Schwab **`BASE/QUOTE`** FX quotes (`method: ice-formula`, `source: schwab-fx`). Schwab does not serve **`$DXY`** or FX **price history** for backfill — see [docs/schwab/external-market-data.md](../../docs/schwab/external-market-data.md) and [observations.md](../../docs/schwab/observations.md).

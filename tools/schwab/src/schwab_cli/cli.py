@@ -6,7 +6,9 @@ from schwab_cli.capture import run_capture
 from schwab_cli.http_client import schwab_get
 from schwab_cli.keychain import KeychainError
 from schwab_cli.lockfile import TokenLockError
+from schwab_cli.macro_dxy import run_macro_dxy
 from schwab_cli.oauth import OAuthError, run_login_flow
+from schwab_cli.usdx import UsdxQuoteError
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -41,6 +43,16 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Underlying equity ticker for quotes, history, and chain.",
     )
 
+    macro_parser = sub.add_parser(
+        "macro",
+        help="Macro reference series (computed or external; see method/source in JSON).",
+    )
+    macro_sub = macro_parser.add_subparsers(dest="macro_command", required=True)
+    macro_sub.add_parser(
+        "dxy",
+        help="ICE USDX from six Schwab FX quotes (ice-formula / schwab-fx).",
+    )
+
     return parser
 
 
@@ -68,6 +80,13 @@ def main(argv: list[str] | None = None) -> None:
             )
             return
 
+        if args.command == "macro":
+            if args.macro_command == "dxy":
+                run_macro_dxy()
+                return
+            msg = f"Unknown macro command {args.macro_command!r}"
+            raise RuntimeError(msg)
+
         msg = f"Unknown command {args.command!r}"
         raise RuntimeError(msg)
     except (
@@ -75,6 +94,7 @@ def main(argv: list[str] | None = None) -> None:
         BitwardenSecretsError,
         OAuthError,
         TokenLockError,
+        UsdxQuoteError,
         ValueError,
     ) as exc:
         print(exc, file=sys.stderr)
