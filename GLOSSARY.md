@@ -73,3 +73,21 @@ _Avoid_: Balance, buying power
 **Margin Cushion**:
 How far Net Liquidation Value can fall, as a percent, before a margin call. The call is at today's Net Liquidation Value times one minus that percent. A Portfolio that is not borrowing has none.
 _Avoid_: Margin percentage, equity percentage, buying power
+
+## Pricing
+
+**Mark**:
+Schwab's quoted current price for an option contract, per share: the midpoint of its bid and ask.
+_Avoid_: Theoretical value, last price
+
+**Mark-implied IV**:
+The volatility at which our model reproduces a contract's Mark. Every Position's base value starts from it, so a Shock of zero reproduces market value.
+_Avoid_: Contract IV, chain IV
+
+**Settlement instant**:
+The moment a contract stops trading and settles: 4:00 pm ET on expiration day for equity, ETF, SPXW and XSP options, and 9:30 am ET for AM-settled SPX.
+_Avoid_: Expiry date, expiration (when time of day matters)
+
+**Remaining life**:
+Calendar time from a valuation moment through a contract's Settlement instant. Under a Shock it is today's remaining life minus the Scenario's days forward.
+_Avoid_: DTE, time to expiry (when the instant is ambiguous)
