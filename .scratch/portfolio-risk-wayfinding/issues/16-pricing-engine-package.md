@@ -1,7 +1,7 @@
 # Pricing engine package (`packages/pricing-engine`)
 
 Type: task
-Status: ready-for-agent
+Status: resolved
 
 Blocked by: none (builds on [06](06-pricing-inputs-and-models.md), [ADR 0001](../../../docs/adr/0001-own-pricing-model.md) and [ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md)). Followed by [17](17-engine-rate-and-dividend-inputs.md) (rate and dividends) and [18](18-engine-worker.md) (worker).
 
@@ -51,3 +51,14 @@ From the spikes (`tools/schwab/prototype/quantlib-engine/VERDICT.md`):
 
 - Type checker (ty, pyright or mypy): implementer choice.
 - Untested in the spikes: Shocks that move the valuation date past a dividend. Add a fixture.
+
+## Answer
+
+Landed in `4c024dc`: `packages/pricing-engine/`, a standalone `uv` project with the pnpm wrapper, Lefthook jobs, Knip config and `AGENTS.md`. The type checker is ty. Settlement instants, the virtual clock, inputs with provenance, European and American pricing, parity forward, Mark-implied IV, bump-and-reprice Greeks and the committed JSON Schema are all in. Checked on 2026-10-24: 85 tests pass, Ruff and ty are clean, and the 50-Position by 100-Shock grid takes 0.12 s through a 14-process pool against the 1 s limit. No test uses the network.
+
+The pricing details are in `packages/pricing-engine/AGENTS.md`. The comparison with Schwab is in `docs/research/pricing-engine-vs-schwab-iren.md` (`be9a9b5`): IV runs 0.7 to 0.8 vol point above ours on long-dated IREN calls, and short-dated, low-priced options are noisier.
+
+Open items:
+
+- Dividend-paying American options have not been compared with Schwab, and are expected to differ more.
+- The package says it does no network I/O, which [17](17-engine-rate-and-dividend-inputs.md) changes for the Treasury module.
