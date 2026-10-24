@@ -44,4 +44,16 @@ An **Observation** is a fact read off one or more Captures. Observations are che
 
 **2026-10-23, implemented:** Python CLI at `tools/schwab/` (`pnpm schwab`). Commands `login`, `get`, `capture`. Bitwarden via `bitwarden-sdk` and Keychain `bws-access-token` / `bws-org-id`. Schwab tokens in Keychain `investor-basecamp` / `schwab`. Captures under `.local/schwab/captures/`.
 
-**2026-10-23, capture run:** Live `capture` for `IREN` / `IREN  261023P00022000` (20261023T140603Z–140605Z). Observations in [docs/schwab/observations.md](../../../docs/schwab/observations.md). **Human follow-up:** TOS IV/greek spot-check; second capture on a dividend-paying `--equity`; confirm cash/IRA balance fields if those account types exist; index option symbol if you hold SPX/XSP.
+**2026-10-23, capture run:** Live `capture` for `IREN` / `IREN  261023P00022000` (20261023T140603Z–140605Z). Observations in [docs/schwab/observations.md](../../../docs/schwab/observations.md).
+
+**2026-10-24, ticket follow-ups (API):**
+
+| Follow-up | Result |
+| --- | --- |
+| Cash / IRA balances | **Only `MARGIN`** on all three linked accounts (re-pull `20261024T002828Z`). NLV = `currentBalances.liquidationValue`. No separate CASH/IRA type to validate yet. |
+| Dividend-paying equity | **No div-paying name in holdings** (scan). **SATA** capture (20261023) + **SPY** reference capture (`20261024T002829Z`) document dividend fields. |
+| SPX / XSP index options | **Not held.** Chain probes: **`$SPX`** → `SPXW  …` OCC; **`$XSP`** → `XSP   …` (3 spaces), **`exerciseType: E`**. See observations. |
+| TOS IV/greeks | **Prices verified:** TOS **EN270115C55** last/bid/ask/OHLC/vol match API (observations). **IV/greeks not in screenshot** — optional TOS Analyze pass if ticket 06 needs numeric parity. |
+| Pricing hints | Chain **root** `interestRate` only (~4.03); contract rows **`interestRate` null**; DTE integer from `:suffix` in exp keys. |
+
+**Still human:** Fill TOS row for `IREN  270115C00055000` in observations (or waive). Optionally resolve comment that CLI lives on main vs throwaway branch. Then mark done and unblock [12](12-can-historical-data-calibrate-shocks.md).
