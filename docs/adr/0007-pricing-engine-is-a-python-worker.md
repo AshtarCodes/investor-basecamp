@@ -6,7 +6,7 @@ Evidence is two spikes on this Mac (branch `prototype/quantlib-engine`). QuantLi
 
 ## Layout
 
-- `packages/pricing-engine/` is a standalone `uv` project with its own `pyproject.toml`, ruff, pytest and a type checker. The type checker is chosen in the engine's issue. QuantLib ships without type hints, so the checker covers only our code.
+- `packages/pricing-engine/` is a standalone `uv` project with its own `pyproject.toml`, ruff, pytest and a type checker. The type checker is ty ([ticket 16](../../.scratch/portfolio-risk-wayfinding/issues/16-pricing-engine-package.md)). QuantLib ships without type hints, so the checker covers only our code.
 - A thin `package.json` there wraps lint, format check, type check and test as scripts. The pnpm workspace (`packages:` in `pnpm-workspace.yaml`) lets `pnpm -r` and Lefthook run them. pnpm manages no Python dependencies.
 - `tools/schwab` depends on the engine by path: `pricing-engine = { path = "../../packages/pricing-engine", editable = true }`.
 - The TS server never imports Python. It spawns `uv run --project packages/pricing-engine pricing-worker`.
@@ -25,6 +25,6 @@ QuantLib's dates are whole days, but ADR 0001 needs calendar minutes to the sett
 ## Consequences
 
 - American options use the QuantLib finite-difference cash-drop model. The Leisen-Reimer tree on spot minus the present value of dividends stays as a cross-check and fallback. In the first spike it landed about 3 cents either side of the cash-drop price, depending on step count.
-- Python and TypeScript have separate toolchains. Knip, Oxlint and Vitest do not see the engine. Knip's workspace handling for a `package.json` with no JS sources is untested.
+- Python and TypeScript have separate toolchains. Knip, Oxlint and Vitest do not see the engine. Knip handles the engine's `package.json` with no JS sources without extra config beyond `ignoreBinaries: ["uv"]`.
 - **Open: the worker protocol.** The JSON round-trip, restart behavior, and worker pool size are unmeasured; [ticket 18](../../.scratch/portfolio-risk-wayfinding/issues/18-engine-worker.md) measures them.
 - **Untested:** European index options on a put-call-parity forward, VIX options with Black-76, and Shocks that move the valuation date past a dividend.

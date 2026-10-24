@@ -3,6 +3,11 @@ pre-commit:
     - name: oxlint
       glob: "*.{js,jsx,ts,tsx}"
       run: pnpm exec oxlint --type-aware --deny-warnings {staged_files}
+    - name: ruff
+      glob: "packages/pricing-engine/**/*.py"
+      run: >-
+        uv run --project packages/pricing-engine ruff check {staged_files} &&
+        uv run --project packages/pricing-engine ruff format --check {staged_files}
 
 pre-push:
   parallel: true
@@ -13,3 +18,7 @@ pre-push:
       run: pnpm exec vitest run
     - name: knip
       run: pnpm exec knip
+    - name: pricing-engine typecheck
+      run: pnpm --filter pricing-engine run typecheck
+    - name: pricing-engine pytest
+      run: pnpm --filter pricing-engine run test

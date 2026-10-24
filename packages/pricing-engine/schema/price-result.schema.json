@@ -1,0 +1,318 @@
+{
+  "$defs": {
+    "CashDividend": {
+      "additionalProperties": false,
+      "description": "A cash dividend per share. It drops the spot at 09:30 America/New_York on `ex_date`.",
+      "properties": {
+        "amount": {
+          "exclusiveMinimum": 0,
+          "title": "Amount",
+          "type": "number"
+        },
+        "ex_date": {
+          "format": "date",
+          "title": "Ex Date",
+          "type": "string"
+        },
+        "from": {
+          "minLength": 1,
+          "title": "From",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ex_date",
+        "amount",
+        "from"
+      ],
+      "title": "CashDividend",
+      "type": "object"
+    },
+    "CrossCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "difference": {
+          "title": "Difference",
+          "type": "number"
+        },
+        "model": {
+          "const": "leisen_reimer",
+          "title": "Model",
+          "type": "string"
+        },
+        "price": {
+          "title": "Price",
+          "type": "number"
+        },
+        "steps": {
+          "title": "Steps",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "model",
+        "steps",
+        "price",
+        "difference"
+      ],
+      "title": "CrossCheck",
+      "type": "object"
+    },
+    "Greeks": {
+      "additionalProperties": false,
+      "description": "Bump-and-reprice sensitivities: vega per vol point, theta per day, rho per rate point.",
+      "properties": {
+        "delta": {
+          "title": "Delta",
+          "type": "number"
+        },
+        "gamma": {
+          "title": "Gamma",
+          "type": "number"
+        },
+        "rho": {
+          "title": "Rho",
+          "type": "number"
+        },
+        "theta": {
+          "title": "Theta",
+          "type": "number"
+        },
+        "vega": {
+          "title": "Vega",
+          "type": "number"
+        }
+      },
+      "required": [
+        "delta",
+        "gamma",
+        "vega",
+        "theta",
+        "rho"
+      ],
+      "title": "Greeks",
+      "type": "object"
+    },
+    "ImpliedVolatility": {
+      "additionalProperties": false,
+      "description": "The Mark-implied IV as a decimal, or why there is none.\n\n`residual` is the Mark minus the model value at the lowest \u03c3 bound; it is set only when\nthere is no IV, and ADR 0001 carries it unchanged under Shocks.",
+      "properties": {
+        "reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "at_or_below_intrinsic",
+                "no_bracket"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "residual": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Residual"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "ImpliedVolatility",
+      "type": "object"
+    },
+    "PricedInputs": {
+      "additionalProperties": false,
+      "description": "The request's inputs, echoed with their provenance. `volatility` is the \u03c3 priced at.",
+      "properties": {
+        "borrow_rate": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "continuous_yield": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "dividends": {
+          "items": {
+            "$ref": "#/$defs/CashDividend"
+          },
+          "title": "Dividends",
+          "type": "array"
+        },
+        "forward": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rate": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "spot": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "volatility": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "spot",
+        "rate",
+        "volatility",
+        "continuous_yield",
+        "borrow_rate",
+        "dividends",
+        "forward"
+      ],
+      "title": "PricedInputs",
+      "type": "object"
+    },
+    "Sourced": {
+      "additionalProperties": false,
+      "description": "A number and where it came from. Every input to a price names its source.",
+      "properties": {
+        "from": {
+          "minLength": 1,
+          "title": "From",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value",
+        "from"
+      ],
+      "title": "Sourced",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A price and the inputs that produced it. `price` is null when there is no Mark-implied IV.",
+  "properties": {
+    "cross_check": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CrossCheck"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "flags": {
+      "items": {
+        "enum": [
+          "hard_to_borrow",
+          "no_iv",
+          "dividend_not_in_life",
+          "expired"
+        ],
+        "type": "string"
+      },
+      "title": "Flags",
+      "type": "array"
+    },
+    "greeks": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Greeks"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "inputs": {
+      "$ref": "#/$defs/PricedInputs"
+    },
+    "iv": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ImpliedVolatility"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "model": {
+      "enum": [
+        "black_scholes_merton",
+        "black_76",
+        "american_closed_form",
+        "american_fd_cash_drop",
+        "intrinsic"
+      ],
+      "title": "Model",
+      "type": "string"
+    },
+    "price": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Price"
+    },
+    "remaining_life_years": {
+      "title": "Remaining Life Years",
+      "type": "number"
+    },
+    "settlement_instant": {
+      "format": "date-time",
+      "title": "Settlement Instant",
+      "type": "string"
+    }
+  },
+  "required": [
+    "price",
+    "model",
+    "inputs",
+    "iv",
+    "greeks",
+    "cross_check",
+    "settlement_instant",
+    "remaining_life_years",
+    "flags"
+  ],
+  "title": "PriceResult",
+  "type": "object"
+}

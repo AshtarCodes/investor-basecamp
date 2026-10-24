@@ -1,0 +1,38 @@
+[project]
+name = "pricing-engine"
+version = "0.1.0"
+description = "QuantLib-backed option pricing engine for investor-basecamp (ADR 0001, ADR 0007)"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic>=2.11",
+    "quantlib>=1.44",
+    "scipy>=1.16",
+    "tzdata>=2025.2",
+]
+
+[project.scripts]
+export-schema = "pricing_engine.schema_export:main"
+
+[dependency-groups]
+dev = [
+    "numpy>=2.3",
+    "pytest>=8.0.0",
+    "ruff>=0.14",
+    "ty>=0.0.1a1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.1,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+# σ, r and the other Greek letters are the domain's notation.
+ignore = ["RUF001", "RUF002", "RUF003"]

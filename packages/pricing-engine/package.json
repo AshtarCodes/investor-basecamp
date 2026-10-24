@@ -1,0 +1,14 @@
+{
+  "name": "pricing-engine",
+  "private": true,
+  "description": "Python pricing engine (uv project). These scripts only wrap uv; pnpm manages no Python dependencies.",
+  "scripts": {
+    "lint": "uv run ruff check .",
+    "format": "uv run ruff format .",
+    "format:check": "uv run ruff format --check .",
+    "typecheck": "uv run ty check",
+    "test": "uv run pytest",
+    "schema": "uv run export-schema",
+    "bench": "uv run python bench/grid.py"
+  }
+}

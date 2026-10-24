@@ -26,10 +26,11 @@ Scaffold when `package.json` is missing: `docs/agents/setup.md`.
 - Session and the auth handler: `src/lib/AGENTS.md`
 - Vitest layers: `tests/AGENTS.md`
 - Playwright flows: `e2e/AGENTS.md`
+- Pricing engine (Python, `uv`): `packages/pricing-engine/AGENTS.md`
 
 ### Checks
 
-Oxlint lints. Type-aware rules come from `oxlint-tsgolint` built for the same TypeScript 7 that `tsc` typechecks with. Knip v6 reports unused files, exports, and dependencies; clear a report by removing that code or dependency. Lefthook runs Oxlint on staged files at commit, and runs `tsc`, Vitest, and Knip at push.
+Oxlint lints. Type-aware rules come from `oxlint-tsgolint` built for the same TypeScript 7 that `tsc` typechecks with. Knip v6 reports unused files, exports, and dependencies; clear a report by removing that code or dependency. Lefthook runs Oxlint on staged files at commit, and runs `tsc`, Vitest, and Knip at push. The Python engine (`packages/pricing-engine/AGENTS.md`) adds Ruff on its staged files at commit, and ty and pytest at push.
 
 A tool that imports the TypeScript programmatic API is satisfied with `@typescript/typescript6` beside the TypeScript 7 compiler, using the alias from the TypeScript 7 announcement, so `tsc` stays on 7.
 
