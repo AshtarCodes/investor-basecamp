@@ -3,7 +3,7 @@
 Type: task
 Status: ready-for-agent
 
-Blocked by: [16](16-pricing-engine-package.md) (builds on [06](06-pricing-inputs-and-models.md), [ADR 0001](../../../docs/adr/0001-own-pricing-model.md) and [ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md))
+Blocked by: [16](16-pricing-engine-package.md), [17](17-engine-rate-and-dividend-inputs.md) (builds on [06](06-pricing-inputs-and-models.md), [ADR 0001](../../../docs/adr/0001-own-pricing-model.md) and [ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md))
 
 ## Goal
 
@@ -169,7 +169,7 @@ Removed from earlier drafts: `--fetch`, `--compare-schwab`, `--until`, **`asOfAp
 | **Vol** | **`expiry`:** unused. **`theoretical`** / **`sell`:** live default **Mark-implied IV**; optional **`--vol`**. Constant σ through remaining life. Same as the app ([07](07-how-should-shocks-behave.md)). Schwab IV appears only in `crossCheck`. |
 | **Dividends** | **`theoretical`** / **`sell`:** discrete cash dividends in v1. With `divFreq` 4, the schedule comes from `nextDivExDate` and `divPayAmount`, projected every 3 months to expiry, and the JSON names the projection rule. `divFreq` 0 with `divYield` above 0 (SATA's case): continuous yield from `divYield` (percent), a warning, and `divTreatment: "continuous-yield"`. All dividend fields zero: none. **`expiry`:** ignores div flags. |
 | **Rate** | Treasury.gov daily par curve interpolated to the expiry, continuous compounding, `from: "treasury-gov"`. Schwab's chain `interestRate` (about 4.04, root only, source unknown) matched no Treasury tenor on 2026-10-23 (4.11 at 1 month, 4.22 at 3 months), so it is a flagged fallback and a `crossCheck` field. |
-| **Engine** | Python package ([16](16-pricing-engine-package.md), [ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md)); the CLI imports it. Exact minutes to the **Settlement instant** come from the engine's virtual clock. |
+| **Engine** | Python package ([16](16-pricing-engine-package.md) core, [17](17-engine-rate-and-dividend-inputs.md) rate and dividends, [ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md)); the CLI imports it. Exact minutes to the **Settlement instant** come from the engine's virtual clock. |
 | **Cross-check** | `crossCheck`: IV gap in vol points (ours minus Schwab IV), our value at Schwab IV, and the difference from the **Mark** and from Schwab's `theoreticalOptionValue`. Tolerance, not equality. |
 | **`--spot`** | **`theoretical`** only. **`sell`** uses **`--expected-spot`** at exit instant. |
 | **`sell` + past exit** | Live **`sell`** with an exit instant before now (a past **`--as-of`**, or **`--dte`** larger than the real remaining life) is an **error** that points to **`--offline`**, the same rule as **`theoretical`**. **`--dte`** above the real remaining life stays allowed under **`theoretical`** as a stress. |
@@ -240,7 +240,7 @@ Every run carries provenance on fields (`from`: `schwab-*` vs `cli`).
 
 ## Models and tests
 
-Pricing, IV solving, greeks, the Treasury rate and the dividend projection live in the [engine package](16-pricing-engine-package.md). This issue owns orchestration, the Schwab fetch and the JSON shape.
+Pricing, IV solving and greeks live in the [engine package](16-pricing-engine-package.md); the Treasury rate and the dividend projection are in [17](17-engine-rate-and-dividend-inputs.md). The CLI adds the path dependency on the engine to `tools/schwab/pyproject.toml`. This issue owns orchestration, the Schwab fetch and the JSON shape.
 
 - **American** equity/ETF: finite-difference cash-drop with discrete dividends ([ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md)); the Leisen–Reimer cross-check is inside the engine's tests.
 - **European** index (XSP, SPXW): per [ADR 0001](../../../docs/adr/0001-own-pricing-model.md).

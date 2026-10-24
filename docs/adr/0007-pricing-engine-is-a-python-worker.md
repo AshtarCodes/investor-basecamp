@@ -26,5 +26,5 @@ QuantLib's dates are whole days, but ADR 0001 needs calendar minutes to the sett
 
 - American options use the QuantLib finite-difference cash-drop model. The Leisen-Reimer tree on spot minus the present value of dividends stays as a cross-check and fallback. In the first spike it landed about 3 cents either side of the cash-drop price, depending on step count.
 - Python and TypeScript have separate toolchains. Knip, Oxlint and Vitest do not see the engine. Knip's workspace handling for a `package.json` with no JS sources is untested.
-- **Open: the worker protocol.** The JSON round-trip, restart behavior, and worker pool size are unmeasured.
+- **Open: the worker protocol.** The JSON round-trip, restart behavior, and worker pool size are unmeasured; [ticket 18](../../.scratch/portfolio-risk-wayfinding/issues/18-engine-worker.md) measures them.
 - **Untested:** European index options on a put-call-parity forward, VIX options with Black-76, and Shocks that move the valuation date past a dividend.
