@@ -168,9 +168,9 @@ Removed from earlier drafts: `--fetch`, `--compare-schwab`, `--until`, **`asOfAp
 | **`--entry`** | P&amp;L **Entry** for **`expiry`** / **`sell`**; live default **Schwab mark** (buy-at-mark / not-held scenarios); never a model input; not **Total Cost**. |
 | **Vol** | **`expiry`:** unused. **`theoretical`** / **`sell`:** live default **Mark-implied IV**; optional **`--vol`**. Constant σ through remaining life. Same as the app ([07](07-how-should-shocks-behave.md)). Schwab IV appears only in `crossCheck`. |
 | **Dividends** | **`theoretical`** / **`sell`:** discrete cash dividends in v1. With `divFreq` 4, the schedule comes from `nextDivExDate` and `divPayAmount`, projected every 3 months to expiry, and the JSON names the projection rule. `divFreq` 0 with `divYield` above 0 (SATA's case): continuous yield from `divYield` (percent), a warning, and `divTreatment: "continuous-yield"`. All dividend fields zero: none. **`expiry`:** ignores div flags. |
-| **Rate** | Treasury.gov daily par curve interpolated to the expiry, continuous compounding, `from: "treasury-gov"`. Schwab's chain `interestRate` (about 4.04, root only, source unknown) matched no Treasury tenor on 2026-10-23 (4.11 at 1 month, 4.22 at 3 months), so it is a flagged fallback and a `crossCheck` field. |
+| **Rate** | Treasury.gov daily par curve interpolated to the expiry, continuous compounding, `from: "treasury-gov"`. Schwab's chain `interestRate` (about 4.03, root only, source unknown) sat below every Treasury tenor on 2026-10-23 (4.07 at 1 month in continuous terms), so it is a flagged fallback and a `crossCheck` field. It is also not the rate behind Schwab's default `theoreticalOptionValue`: on SPX, SPXW and XSP that value implies a flat 0.04% at every expiry, while `strategy=ANALYTICAL` honours the rate it is given ([schwab-implied-rate.md](../../../docs/research/schwab-implied-rate.md)). |
 | **Engine** | Python package ([16](16-pricing-engine-package.md) core, [17](17-engine-rate-and-dividend-inputs.md) rate and dividends, [ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md)); the CLI imports it. Exact minutes to the **Settlement instant** come from the engine's virtual clock. |
-| **Cross-check** | `crossCheck`: IV gap in vol points (ours minus Schwab IV), our value at Schwab IV, and the difference from the **Mark** and from Schwab's `theoreticalOptionValue`. Tolerance, not equality. |
+| **Cross-check** | `crossCheck`: IV gap in vol points (ours minus Schwab IV), our value at Schwab IV, and the difference from the **Mark** and from Schwab's `ANALYTICAL` value. Tolerance, not equality. The `ANALYTICAL` value comes from one extra `/chains` call (`strategy=ANALYTICAL`, one expiry, `fromDate` and `toDate` set to it) passing our inputs: `interestRate` (percent) from our rate quote, `underlyingPrice` as our spot, `volatility` as Schwab's contract IV, and `daysToExpiration`. That puts Schwab's formula on the same rate and IV as ours, so the difference is the model, the time convention and the dividend treatment. Schwab's default `theoreticalOptionValue` is shown beside it as `schwabDefaultTheoretical` and is **never** the tolerance reference: it uses about 0.04% on index options, so a 249-day SPX option differs from a 4% price by about $100. |
 | **`--spot`** | **`theoretical`** only. **`sell`** uses **`--expected-spot`** at exit instant. |
 | **`sell` + past exit** | Live **`sell`** with an exit instant before now (a past **`--as-of`**, or **`--dte`** larger than the real remaining life) is an **error** that points to **`--offline`**, the same rule as **`theoretical`**. **`--dte`** above the real remaining life stays allowed under **`theoretical`** as a stress. |
 | **Breakeven** | **`expiry`:** **`breakevenSpot`** closed form. **`sell`:** omit v1. |
@@ -228,7 +228,7 @@ pnpm schwab option price --symbol 'IREN  270115C00055000' \
   "results": {
     "theoretical": {
       "ours": { "model": "leisen-reimer", "value": 0.42, "greeks": {} },
-      "crossCheck": { "ivGapVolPts": -0.36, "ourValueAtSchwabIv": 0.43, "vsMark": 0.01, "vsSchwabTheoretical": 0.0 }
+      "crossCheck": { "ivGapVolPts": -0.36, "ourValueAtSchwabIv": 0.43, "vsMark": 0.01, "vsSchwabAnalytical": 0.0, "schwabDefaultTheoretical": 0.42 }
     }
   }
 }
@@ -245,7 +245,7 @@ Pricing, IV solving and greeks live in the [engine package](16-pricing-engine-pa
 - **American** equity/ETF: finite-difference cash-drop with discrete dividends ([ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md)); the Leisen–Reimer cross-check is inside the engine's tests.
 - **European** index (XSP, SPXW): per [ADR 0001](../../../docs/adr/0001-own-pricing-model.md).
 - Engine oracles (Haug BSM, closed-form fractional T, CRR reference) are in 16. Here: tests on a fixed quote fixture that assert the JSON shape and provenance.
-- Schwab cross-check: cents tolerance; document near ex-div and long-dated gaps.
+- Schwab cross-check: cents tolerance against the `ANALYTICAL` value (see the decisions table); document near ex-div and long-dated gaps. Not yet verified: that `ANALYTICAL` on an equity or ETF behaves like Black-Scholes in the passed rate (only SPX was checked, by put-call parity), and the 1 to 1.3 day shortfall in Schwab's life found on IREN calls ([pricing-engine-vs-schwab-iren.md](../../../docs/research/pricing-engine-vs-schwab-iren.md)). Expect a time-convention gap on short-dated options until that is explained.
 
 ## Implementation phases
 
@@ -260,6 +260,6 @@ Pricing, IV solving and greeks live in the [engine package](16-pricing-engine-pa
 
 ## Prototype pointer
 
-Schwab `/chains` ANALYTICAL probe and verdict: branch `prototype/schwab-analytical-chain` (commit 7e4964f), `tools/schwab/prototype/ANALYTICAL_CHAIN_VERDICT.md`. Relevant here: overrides work for one expiry per call only, vol is flat, and Schwab's IV, theoretical value and mark did not reproduce each other in a Saturday SPY snapshot. Re-run in market hours before using Schwab's side-by-side as a tolerance reference.
+Schwab `/chains` ANALYTICAL probe and verdict: branch `prototype/schwab-analytical-chain` (commit 7e4964f), `tools/schwab/prototype/ANALYTICAL_CHAIN_VERDICT.md`. Relevant here: overrides work for one expiry per call only, vol is flat, and Schwab's IV, theoretical value and mark did not reproduce each other in a Saturday SPY snapshot. Re-run in market hours before using Schwab's side-by-side as a tolerance reference ([15](15-rerun-analytical-probe-in-market-hours.md)). The rate finding in [schwab-implied-rate.md](../../../docs/research/schwab-implied-rate.md) (default theoretical values imply about 0.04% on index options; `ANALYTICAL` honours the rate passed) is also a Saturday result and belongs in that rerun.
 
 QuantLib engine spike and verdict: branch `prototype/quantlib-engine` (commit eaefea7), `tools/schwab/prototype/quantlib-engine/VERDICT.md`. Go; the engine is a Python package the CLI imports and the server runs as a worker ([ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md), built in [16](16-pricing-engine-package.md)). Exact minutes to the settlement instant passed on the virtual clock.

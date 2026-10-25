@@ -30,6 +30,7 @@ The probe and its first verdict are on the branch `prototype/schwab-analytical-c
 - Whether SPX/XSP theoretical values are European (below intrinsic on deep ITM puts at a flat vol) or American.
 - Whether the continuous yield implied by a deep ITM call is stable across expiries (0.98% at 365 basis in the first run), to separate day basis from yield.
 - Any change to the request-shape findings (overrides honoured only for one expiration; whole chain returned).
+- Whether the rate behind the default `theoreticalOptionValue` is still about 0.04% on SPX and XSP (the call-minus-put regression in [schwab-implied-rate.md](../../../docs/research/schwab-implied-rate.md)), and whether `ANALYTICAL` still honours a passed `interestRate`. [Ticket 14](14-schwab-option-price-cli.md)'s cross-check depends on the second.
 
 ## Why it matters
 

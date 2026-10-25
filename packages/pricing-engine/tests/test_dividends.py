@@ -1,4 +1,6 @@
-from datetime import date
+from datetime import UTC, date, datetime
+
+from support import priced, request
 
 from pricing_engine import project_dividends
 
@@ -132,3 +134,25 @@ def test_month_ends_clamp_without_drifting():
         date(2027, 2, 28),
         date(2027, 5, 31),
     ]
+
+
+def test_a_projected_schedule_feeds_the_pricer_and_raises_an_american_put():
+    # SPY's schedule through a 2027-06-30 expiry, priced as an 800 put on a spot of 700.
+    schedule = project_dividends(
+        next_div_ex_date="2026-12-18T00:00:00Z",
+        div_pay_amount=1.88883,
+        div_freq=4,
+        div_yield=0.97729,
+        valuation_date=VALUATION,
+        expiry=date(2027, 6, 30),
+    ).dividends
+    option = {
+        "right": "put",
+        "exercise": "american",
+        "strike": 800.0,
+        "spot": 700.0,
+        "sigma": 0.2,
+        "expiry": date(2027, 6, 30),
+        "valuation": datetime(2026, 10, 24, 20, 0, tzinfo=UTC),
+    }
+    assert priced(request(**option, dividends=schedule)) > priced(request(**option)) + 0.1

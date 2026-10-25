@@ -165,7 +165,7 @@ SATA capture set: `20261023T145755Z`–`145757Z`. Option leg used **`SATA  26112
 | `dividendYield` | Chain root | `0.0` for IREN. |
 | Days to expiry | Exp map key + contract | Keys like `2026-10-23:0` (`date:days`); contract `daysToExpiration` `0` for same-day expiry. Suffix `:0`, `:7`, `:29`, … increments with calendar expiries — **time-of-day not represented** in the integer DTE field (0-DTE on expiry day). |
 
-**Rate source / day count:** single chain-level `interestRate` suggests one rate applied across expiries in this response; cannot confirm expiry-dependent rates or day-count convention from this pull alone.
+**Rate source / day count:** single chain-level `interestRate` suggests one rate applied across expiries in this response; cannot confirm expiry-dependent rates or day-count convention from this pull alone. **Update 2026-10-24:** the default `theoreticalOptionValue` on SPX, SPXW and XSP implies a flat rate of about 0.04%, not the displayed 4.03; `strategy=ANALYTICAL` honours the displayed or passed rate. See [schwab-implied-rate.md](../research/schwab-implied-rate.md).
 
 **Re-probe (2026-10-24):** IREN and SPY chains — root **`interestRate` ~4.032–4.043**; **per-contract `interestRate` is `null`** on strike rows. Root **`volatility` ~29.0** (underlying) vs contract IV on rows (e.g. SPY call **~15.5** at 10 DTE; IREN **~109–198** depending on expiry). Exp map keys remain **`YYYY-MM-DD:DTE`** (e.g. `2026-11-02:10`); integer **`daysToExpiration`** on contract matches suffix — **no intraday fraction** in DTE.
 
