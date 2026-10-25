@@ -9,6 +9,7 @@
     "typecheck": "uv run ty check",
     "test": "uv run pytest",
     "schema": "uv run export-schema",
-    "bench": "uv run python bench/grid.py"
+    "bench": "uv run python bench/grid.py",
+    "bench:worker": "uv run python bench/worker.py"
   }
 }

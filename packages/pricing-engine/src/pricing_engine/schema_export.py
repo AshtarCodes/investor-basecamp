@@ -3,8 +3,12 @@
 import json
 import sys
 from pathlib import Path
+from typing import Annotated
+
+from pydantic import Field, TypeAdapter
 
 from pricing_engine.models import PriceRequest, PriceResult
+from pricing_engine.protocol import Request, Response
 
 SCHEMA_DIR = Path(__file__).resolve().parents[2] / "schema"
 
@@ -14,6 +18,10 @@ def render_schemas() -> dict[str, str]:
     schemas = {
         "price-request.schema.json": PriceRequest.model_json_schema(mode="validation"),
         "price-result.schema.json": PriceResult.model_json_schema(mode="serialization"),
+        "worker-request.schema.json": TypeAdapter(
+            Annotated[Request, Field(discriminator="type")]
+        ).json_schema(mode="validation"),
+        "worker-response.schema.json": TypeAdapter(Response).json_schema(mode="serialization"),
     }
     return {
         name: json.dumps(schema, indent=2, sort_keys=True) + "\n"

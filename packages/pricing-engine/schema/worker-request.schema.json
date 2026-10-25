@@ -1,0 +1,450 @@
+{
+  "$defs": {
+    "BatchContract": {
+      "additionalProperties": false,
+      "description": "A base request with a Mark, and the Shocks to price it under.",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/PriceRequest"
+        },
+        "shocks": {
+          "items": {
+            "$ref": "#/$defs/Shock"
+          },
+          "title": "Shocks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "request",
+        "shocks"
+      ],
+      "title": "BatchContract",
+      "type": "object"
+    },
+    "BatchMessage": {
+      "additionalProperties": false,
+      "description": "Price many contracts over their Shocks. `numerics` replaces each request's own numerics.",
+      "properties": {
+        "contracts": {
+          "items": {
+            "$ref": "#/$defs/BatchContract"
+          },
+          "title": "Contracts",
+          "type": "array"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Id"
+        },
+        "iv_shift_mode": {
+          "enum": [
+            "absolute",
+            "proportional"
+          ],
+          "title": "Iv Shift Mode",
+          "type": "string"
+        },
+        "numerics": {
+          "$ref": "#/$defs/Numerics",
+          "default": {
+            "clock_days": 3650,
+            "spot_steps": 100,
+            "time_steps": 50,
+            "tree_steps": 101
+          }
+        },
+        "type": {
+          "const": "batch",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "iv_shift_mode",
+        "contracts"
+      ],
+      "title": "BatchMessage",
+      "type": "object"
+    },
+    "CashDividend": {
+      "additionalProperties": false,
+      "description": "A cash dividend per share. It drops the spot at 09:30 America/New_York on `ex_date`.",
+      "properties": {
+        "amount": {
+          "exclusiveMinimum": 0,
+          "title": "Amount",
+          "type": "number"
+        },
+        "ex_date": {
+          "format": "date",
+          "title": "Ex Date",
+          "type": "string"
+        },
+        "from": {
+          "minLength": 1,
+          "title": "From",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ex_date",
+        "amount",
+        "from"
+      ],
+      "title": "CashDividend",
+      "type": "object"
+    },
+    "Contract": {
+      "additionalProperties": false,
+      "properties": {
+        "exercise": {
+          "enum": [
+            "american",
+            "european"
+          ],
+          "title": "Exercise",
+          "type": "string"
+        },
+        "expiry": {
+          "format": "date",
+          "title": "Expiry",
+          "type": "string"
+        },
+        "right": {
+          "enum": [
+            "call",
+            "put"
+          ],
+          "title": "Right",
+          "type": "string"
+        },
+        "root": {
+          "title": "Root",
+          "type": "string"
+        },
+        "strike": {
+          "exclusiveMinimum": 0,
+          "title": "Strike",
+          "type": "number"
+        }
+      },
+      "required": [
+        "root",
+        "expiry",
+        "strike",
+        "right",
+        "exercise"
+      ],
+      "title": "Contract",
+      "type": "object"
+    },
+    "Numerics": {
+      "additionalProperties": false,
+      "description": "Numerical settings. The defaults suit a single price; use 50 by 100 for a Shock grid.",
+      "properties": {
+        "clock_days": {
+          "default": 3650,
+          "minimum": 365,
+          "title": "Clock Days",
+          "type": "integer"
+        },
+        "spot_steps": {
+          "default": 200,
+          "minimum": 10,
+          "title": "Spot Steps",
+          "type": "integer"
+        },
+        "time_steps": {
+          "default": 100,
+          "minimum": 10,
+          "title": "Time Steps",
+          "type": "integer"
+        },
+        "tree_steps": {
+          "default": 101,
+          "minimum": 3,
+          "title": "Tree Steps",
+          "type": "integer"
+        }
+      },
+      "title": "Numerics",
+      "type": "object"
+    },
+    "PriceMessage": {
+      "additionalProperties": false,
+      "description": "Price one contract: a `PriceRequest` with the request id and type beside its fields.",
+      "properties": {
+        "borrow_rate": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "continuous_yield": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "contract": {
+          "$ref": "#/$defs/Contract"
+        },
+        "cross_check": {
+          "default": false,
+          "title": "Cross Check",
+          "type": "boolean"
+        },
+        "dividends": {
+          "items": {
+            "$ref": "#/$defs/CashDividend"
+          },
+          "title": "Dividends",
+          "type": "array"
+        },
+        "forward": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "greeks": {
+          "default": false,
+          "title": "Greeks",
+          "type": "boolean"
+        },
+        "hard_to_borrow": {
+          "default": false,
+          "title": "Hard To Borrow",
+          "type": "boolean"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Id"
+        },
+        "mark": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "numerics": {
+          "$ref": "#/$defs/Numerics"
+        },
+        "rate": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "spot": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "type": {
+          "const": "price",
+          "title": "Type",
+          "type": "string"
+        },
+        "valuation": {
+          "format": "date-time",
+          "title": "Valuation",
+          "type": "string"
+        },
+        "volatility": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "contract",
+        "valuation",
+        "spot",
+        "rate",
+        "id",
+        "type"
+      ],
+      "title": "PriceMessage",
+      "type": "object"
+    },
+    "PriceRequest": {
+      "additionalProperties": false,
+      "description": "Price one contract at a valuation moment, or solve its Mark-implied IV and price at that.\n\nGive `volatility` to price at a known \u03c3, or `mark` to solve the Mark-implied IV.",
+      "properties": {
+        "borrow_rate": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "continuous_yield": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "contract": {
+          "$ref": "#/$defs/Contract"
+        },
+        "cross_check": {
+          "default": false,
+          "title": "Cross Check",
+          "type": "boolean"
+        },
+        "dividends": {
+          "items": {
+            "$ref": "#/$defs/CashDividend"
+          },
+          "title": "Dividends",
+          "type": "array"
+        },
+        "forward": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "greeks": {
+          "default": false,
+          "title": "Greeks",
+          "type": "boolean"
+        },
+        "hard_to_borrow": {
+          "default": false,
+          "title": "Hard To Borrow",
+          "type": "boolean"
+        },
+        "mark": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "numerics": {
+          "$ref": "#/$defs/Numerics"
+        },
+        "rate": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "spot": {
+          "$ref": "#/$defs/Sourced"
+        },
+        "valuation": {
+          "format": "date-time",
+          "title": "Valuation",
+          "type": "string"
+        },
+        "volatility": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sourced"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "contract",
+        "valuation",
+        "spot",
+        "rate"
+      ],
+      "title": "PriceRequest",
+      "type": "object"
+    },
+    "Shock": {
+      "additionalProperties": false,
+      "description": "One cell of a Scenario, for one contract's Underlying.\n\n`spot_move` is that Underlying's Beta-weighted Move, which the caller has already worked out,\nas a fraction of spot (-0.05 is down 5%). `iv_shift` is added to the contract's IV\nas a decimal (0.02 is 2 vol points) in `absolute` mode, or scales it (0.25 is +25%) in\n`proportional` mode. `days_forward` is calendar days.",
+      "properties": {
+        "days_forward": {
+          "maximum": 36500,
+          "minimum": 0,
+          "title": "Days Forward",
+          "type": "number"
+        },
+        "iv_shift": {
+          "title": "Iv Shift",
+          "type": "number"
+        },
+        "spot_move": {
+          "exclusiveMinimum": -1,
+          "title": "Spot Move",
+          "type": "number"
+        }
+      },
+      "required": [
+        "spot_move",
+        "iv_shift",
+        "days_forward"
+      ],
+      "title": "Shock",
+      "type": "object"
+    },
+    "Sourced": {
+      "additionalProperties": false,
+      "description": "A number and where it came from. Every input to a price names its source.",
+      "properties": {
+        "from": {
+          "minLength": 1,
+          "title": "From",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value",
+        "from"
+      ],
+      "title": "Sourced",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "batch": "#/$defs/BatchMessage",
+      "price": "#/$defs/PriceMessage"
+    },
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/PriceMessage"
+    },
+    {
+      "$ref": "#/$defs/BatchMessage"
+    }
+  ]
+}

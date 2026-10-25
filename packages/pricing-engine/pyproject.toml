@@ -12,6 +12,7 @@ dependencies = [
 
 [project.scripts]
 export-schema = "pricing_engine.schema_export:main"
+pricing-worker = "pricing_engine.worker:main"
 
 [dependency-groups]
 dev = [

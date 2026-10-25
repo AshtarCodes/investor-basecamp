@@ -41,3 +41,13 @@ def test_the_schema_names_provenance_and_the_no_iv_reasons():
     assert "from" in request["$defs"]["Sourced"]["properties"]
     result = json.dumps(schemas["price-result.schema.json"])
     assert "at_or_below_intrinsic" in result and "no_bracket" in result
+
+
+def test_the_worker_schemas_describe_both_request_types_and_every_response_line():
+    schemas = {name: json.loads(text) for name, text in render_schemas().items()}
+    request = schemas["worker-request.schema.json"]
+    assert request["discriminator"]["propertyName"] == "type"
+    assert sorted(request["discriminator"]["mapping"]) == ["batch", "price"]
+    response = json.dumps(schemas["worker-response.schema.json"])
+    for name in ("Ready", "Success", "Failure", "PricedContract", "FailedContract", "invalid_json"):
+        assert name in response
