@@ -22,6 +22,7 @@ Settled across two grilling rounds on 2026-10-18. Terms are defined in `GLOSSARY
 
 - Every contract starts from its live Schwab mark, and our model backs out that contract's own IV. At the Shock with no moves and days forward 0, every Position is worth its current market value.
 - If the model can't solve an IV from the mark (a mark below intrinsic, or a wide, stale market), it uses Schwab's IV for that contract and flags it. This is the only place a Schwab value goes into our pricing.
+  - *2026-10-25: not what was built.* The worker ([18](18-engine-worker.md)) carries the residual instead, as [ADR 0001](../../../docs/adr/0001-own-pricing-model.md) says. The Schwab-IV fallback is kept below as an unimplemented option; see the 2026-10-25 comment.
 
 **IV Shift**
 
@@ -76,3 +77,17 @@ Settled across two grilling rounds on 2026-10-18. Terms are defined in `GLOSSARY
 - Default grid: SPY −20, −15, −10, −7.5, −5, −2.5, 0, +2.5, +5, +10, and +15% by IV −10, −5, 0, +5, +10, and +20 points, at days forward 0 (66 Shocks). Maximum 200 Shocks per Scenario.
 - Starter Scenario "Market shock" for Portfolios created empty or from a screenshot, and for an Account on first sync. A copied Portfolio copies its source's Scenarios.
 - Open: you asked whether the IV shifts are made up, and whether historical data (Schwab, or Massive, formerly Polygon.io) should ground them.
+
+**2026-10-25, after building the worker ([18](18-engine-worker.md)), not part of the answer above:**
+
+- **What changed.** Where the model can't solve an IV, the worker does not fall back to Schwab's IV. It prices each Shock at the model value at the 1 vol point floor plus the residual (the Mark minus that value), so a zero Shock is worth the Mark, and it ignores the IV Shift for that contract. The contract is flagged `no_iv`. This follows [ADR 0001](../../../docs/adr/0001-own-pricing-model.md) ("the residual is carried unchanged"; "don't feed Schwab's IV into our model").
+- **The earlier reasoning, kept.** Ticket 07 states the rule and calls it "the only place a Schwab value goes into our pricing"; it gives no further reason. The apparent benefit (an inference, not recorded) is that a contract with no IV of its own still has a vega response under an IV Shift. The cost is that it feeds Schwab's IV into our model, which ADR 0001 says not to do, and ADR 0001 names the residual carry as the rule.
+- **Unimplemented option: Schwab-IV fallback.** To try it, price the contract at Schwab's IV for the base and each Shock, flag it, and take Shock P/L as the difference. The worker would need Schwab's IV in the batch request, which today carries only a Mark. Nothing in the worker has this path.
+- **Re-check later: what was built against what was proposed.** Do this once the server function exists and a real Portfolio is priced, and compare each point with Schwab's own Shock figures where Schwab has them. Dated findings go under this heading.
+  - *Residual carry against the Schwab-IV option.* A Position with no IV shows no IV risk under the carry (the IV Shift is ignored), and a short-dated, wide-market contract may then understate how far its value moves under a Shock. Check how many Positions in a real Portfolio hit this and how far the two options differ in Shock P/L.
+  - *Expired Shocks drop the residual.* A contract that expires inside the horizon is plain intrinsic, with no residual. The answer above says "intrinsic at the shocked price", which this follows, but ADR 0001 says the residual is carried "unchanged". Confirm which reading is intended.
+  - *Dividend dropout.* The answer says a dividend going ex inside the horizon drops out of option pricing. The worker does this, but its only test is against its own single-price twin, and [ADR 0007](../../../docs/adr/0007-pricing-engine-is-a-python-worker.md) still lists Shocks that move the valuation date past a dividend as untested against an independent oracle.
+  - *Days forward from the "as of" time.* The worker moves the request's valuation forward by calendar days. Counting from the market data's "as of" time is the caller's job; check that the server passes that instant.
+  - *Clamp at -99%.* The worker accepts a spot move above -1 and does not clamp or flag. The caller must clamp and flag the Beta-weighted Move. Check that it does.
+  - *Flag names.* The answer says "expires within horizon". The worker's flag is `expired`, the same one a single price uses for a contract already past its Settlement instant. Check that the app shows the right wording.
+  - *Shock grid accuracy.* Shocks run at 50 by 100 steps, not the 100 by 200 default. ADR 0007 measured it within 0.1 cent at 100 by 200 and no loss of accuracy at 50 by 100 on its spikes; re-check on deep in-the-money and high-IV American options.

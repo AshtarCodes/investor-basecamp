@@ -11,7 +11,7 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
-from support import bsm, request, src, years
+from support import bsm, priced, request, src, years
 from worker_client import Worker, batch_message, price_message
 
 from pricing_engine.worker import DEFAULT_WORKERS
@@ -323,7 +323,7 @@ def process_exists(pid: int) -> bool:
     return True
 
 
-def test_a_dead_pool_process_fails_the_request_in_flight_and_the_pool_is_rebuilt():
+def test_a_pool_process_that_dies_between_requests_fails_the_next_batch_and_the_pool_is_rebuilt():
     spawned = Worker("--workers", "2")
     try:
         batch = european_call_batch([shock(), shock(spot_move=0.01)])
@@ -420,14 +420,26 @@ def test_an_explicit_forward_moves_with_spot_in_a_shock(worker):
     assert amount == pytest.approx(expected, abs=1e-6)
 
 
+def big_batch(id: str) -> dict:
+    """50 dividend-paying American puts by 100 Shocks: a 1-process pool needs over half a second."""
+    shocks = [shock(0.01 * j - 0.5) for j in range(100)]
+    contracts = []
+    for i in range(50):
+        fixture = {**AMERICAN_PUT, "strike": 90.0 + 0.5 * i, "numerics": NUMERICS}
+        mark = priced(request(**fixture, sigma=0.3))
+        contracts.append(
+            (
+                request(**{**AMERICAN_PUT, "strike": 90.0 + 0.5 * i}, sigma=None, mark=src(mark)),
+                shocks,
+            )
+        )
+    return batch_message(id, contracts)
+
+
 def test_sigterm_in_the_middle_of_a_batch_still_exits_with_code_0_within_a_second():
     spawned = Worker("--workers", "1")
-    shocks = [shock(0.01 * j) for j in range(100)]
-    contracts = [
-        (request(sigma=None, mark=src(mark_of(0.2 + 0.001 * i))), shocks) for i in range(50)
-    ]
-    spawned.write(json.dumps(batch_message("big", contracts)))
-    time.sleep(0.1)  # a 1-process pool needs far longer than this for the batch
+    spawned.write(json.dumps(big_batch("big")))
+    time.sleep(0.1)
     started = time.perf_counter()
     spawned.process.send_signal(signal.SIGTERM)
     code = spawned.process.wait(timeout=10)
@@ -437,3 +449,25 @@ def test_sigterm_in_the_middle_of_a_batch_still_exits_with_code_0_within_a_secon
     assert elapsed < 1.0
     time.sleep(0.3)
     assert spawned.pool_pids() == []
+
+
+def test_a_pool_process_killed_in_the_middle_of_a_batch_fails_that_batch_and_the_pool_recovers():
+    spawned = Worker("--workers", "1")
+    try:
+        (victim,) = spawned.pool_pids()
+        spawned.write(json.dumps(big_batch("doomed")))
+        time.sleep(0.15)  # the only pool process is now pricing the batch
+        os.kill(victim, signal.SIGKILL)
+
+        failed = spawned.read()
+        assert failed["id"] == "doomed"
+        assert failed["ok"] is False and failed["error"]["code"] == "internal"
+
+        (replacement,) = spawned.pool_pids()
+        assert replacement != victim
+        retried = spawned.send(european_call_batch([shock(spot_move=0.05)]))
+        assert retried["ok"] is True
+        (amount,) = retried["result"]["contracts"][0]["prices"]
+        assert amount == pytest.approx(bsm("call", 105.0, 100.0, CALL_LIFE, 0.04, 0.3), abs=1e-6)
+    finally:
+        spawned.close()
