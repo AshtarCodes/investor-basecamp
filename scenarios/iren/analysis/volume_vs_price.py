@@ -46,6 +46,58 @@ def correlation(x: list[float], y: list[float]) -> float:
     return num / (sum((a - mx) ** 2 for a in x) ** 0.5 * sum((b - my) ** 2 for b in y) ** 0.5)
 
 
+def forward_return(close: list[float], i: int, days: int) -> float | None:
+    return close[i + days] / close[i] - 1 if i + days < len(close) else None
+
+
+def mean_text(values: list[float | None]) -> str:
+    kept = [v for v in values if v is not None]
+    return f"{st.mean(kept):+.1%}" if kept else "n/a"
+
+
+def low_and_high_volume_moves(close: list[float], rvol: list[float | None], threshold: float) -> None:
+    """Does a move on low or high volume lean to continue or to reverse? Weak, small samples."""
+    n = len(close)
+    ret = [None] + [close[i] / close[i - 1] - 1 for i in range(1, n)]
+    days = range(WINDOW, n)
+    print("\n5. Same-day move x volume, then the next 1, 5 and 10 days (mean; n)")
+    cases = [
+        ("down >3%, low vol (<0.9x)", lambda i: ret[i] < -0.03 and rvol[i] < 0.9),
+        ("down >3%, high vol (>1.3x)", lambda i: ret[i] < -0.03 and rvol[i] > 1.3),
+        ("up >3%, low vol (<0.9x)", lambda i: ret[i] > 0.03 and rvol[i] < 0.9),
+        ("up >3%, high vol (>1.3x)", lambda i: ret[i] > 0.03 and rvol[i] > 1.3),
+        ("all days", lambda i: True),
+    ]
+    for name, cond in cases:
+        sel = [i for i in days if cond(i)]
+        nexts = "  ".join(f"{k}d {mean_text([forward_return(close, i, k) for i in sel])}" for k in (1, 5, 10))
+        print(f"   {name:28} n={len(sel):3}  {nexts}")
+
+    print("\n6. Volume inside each leg: RVOL first half, second half, last 5 days")
+    pivots = zigzag(close, threshold)
+    for a, b in zip(pivots, pivots[1:], strict=False):
+        inside = [i for i in range(a + 1, b + 1) if rvol[i] is not None]
+        if len(inside) < 8:
+            continue
+        half = len(inside) // 2
+        first, second = st.mean(rvol[i] for i in inside[:half]), st.mean(rvol[i] for i in inside[half:])
+        last = st.mean(rvol[i] for i in inside[-5:])
+        print(f"   {'rally' if close[b] > close[a] else 'tank ':5} {close[b] / close[a] - 1:+4.0%}  {first:.2f}x  {second:.2f}x  {last:.2f}x")
+
+    print("\n7. A close at a 20-day high or low, split by volume, then the next 10 days")
+    for name, at_extreme in (
+        ("20d high", lambda i: close[i] >= max(close[i - 19 : i + 1])),
+        ("20d low", lambda i: close[i] <= min(close[i - 19 : i + 1])),
+    ):
+        sel = [i for i in days if at_extreme(i)]
+        low = [i for i in sel if rvol[i] < 0.9]
+        high = [i for i in sel if rvol[i] > 1.2]
+        print(
+            f"   {name}: n={len(sel)}; low vol (<0.9x) n={len(low)} {mean_text([forward_return(close, i, 10) for i in low])}"
+            f"; high vol (>1.2x) n={len(high)} {mean_text([forward_return(close, i, 10) for i in high])}"
+        )
+
+
 def main() -> None:
     path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_CSV
     threshold = float(sys.argv[2]) if len(sys.argv) > 2 else 0.25
@@ -127,6 +179,8 @@ def main() -> None:
         fwd = close[i + 5] / close[i] - 1 if i + 5 < n else None
         fwd_text = f"{fwd:+.0%}" if fwd is not None else "  n/a"
         print(f"   {days[i]}  RVOL {rvol[i]:.1f}x  day {ret[i]:+.1%}  next 5d {fwd_text}")
+
+    low_and_high_volume_moves(close, rvol, threshold)
 
 
 if __name__ == "__main__":

@@ -71,6 +71,18 @@ Data: daily candles from `pnpm schwab get /marketdata/v1/pricehistory?symbol=IRE
 
 Caveats: 8 legs and 7 interior pivots, one stock, one year. The pivots are in hindsight (a 25% reversal confirms them days or weeks late), so volume at the pivot day was not knowable on the day. No intraday data.
 
+### Weak leans, including low-volume moves
+
+Sections 5 to 7 of the same script. Samples are 10 to 37 days, the windows overlap, and nothing is tested for significance: treat these as leans, not rules.
+
+- **Low volume says little.** A day down more than 3% on under 0.9x volume (33 days) was followed by +2.6% over 5 days and +3.0% over 10; a day up more than 3% on low volume (18 days) by 0.0% and -0.8%. The mean over all days is -0.2% and -0.4%. Price falling or rising on thin volume did not continue or reverse in any way that stands out from drift.
+- **Heavy-volume rallies lean to fade.** Up more than 3% on over 1.3x volume (16 days): -3.8% over the next 5 days and -4.6% over 10. The same size of rally on low volume: about flat.
+- **Heavy-volume sell-offs lean to bounce.** Down more than 3% on over 1.3x volume (17 days): +3.4% the next day. A close at a 20-day low on over 1.2x volume (19 days): +5.8% over the next 10 days; on under 0.9x volume (10 days): +0.8%. A 20-day high on over 1.2x volume (12 days): -4.2% over 10; only 2 highs came on low volume, so that side is untested.
+- **Volume does not dry up as legs mature.** The second half of a leg ran at higher RVOL than the first in 5 of 7 legs, rallies included (0.81x to 1.36x; 1.07x to 1.25x). There is no case here of a rally fading on falling volume. The current tank went from 0.95x to 1.45x.
+- **Against these leans:** a version that looked at 5-day moves rather than single days pointed the other way for sell-offs (5-day drops over 10% on heavy volume continued down, -10.9% over the next 5 days, n=14). It overlaps heavily and is a handful of episodes, so the leans above could be noise. It is not in the script.
+
+Net read: volume tells you how violent a move is. At an extreme, high volume leans to a reversal (bounce after a sell-off, fade after a rally) and low volume leans to nothing.
+
 ## Open questions
 
 - **IREN IV history.** Schwab gives no historical option IV. Starting a daily snapshot of the Mark-implied IV (and realized vol) at a few expiries would let us measure IV against spot, which the rules in [`iv-rules.md`](iv-rules.md) currently assume.
