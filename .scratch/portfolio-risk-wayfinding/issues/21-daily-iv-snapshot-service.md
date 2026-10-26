@@ -16,7 +16,7 @@ Schwab's API returns no historical option IV, so how a stock's IV moves with its
 ## Scope
 
 - **A snapshot command.** `pnpm schwab iv snapshot`, a new subcommand of the existing CLI in `tools/schwab/`, reusing its token handling (Keychain), the Schwab GETs in `schwab_inputs.py` and the engine's Mark-implied IV. It reads the ticker list from a committed config file (TOML; no secrets in it). Start with IREN; the config takes more (ticket 12 names CIFR and ASST; `$SPX` is the obvious index).
-- **What it records**, per ticker and day, for a fixed set of contracts:
+- **What it records**, per ticker and day, for a fixed ladder of contracts (see decision 3):
   - the contract (OCC symbol, expiry, strike, right), spot, bid, ask, Mark and the quote time;
   - our Mark-implied IV, or its `reason` when there is none (`at_or_below_intrinsic`, `no_bracket`), with the model, the rate and its source, and the engine flags;
   - Schwab's own `volatility`, as a separate column, so the gap between the two (2 to 8 vol points on IREN's LEAPS on 2026-10-26) is itself recorded;
@@ -43,14 +43,19 @@ Schwab's API returns no historical option IV, so how a stock's IV moves with its
 
 ## Open decisions
 
-1. **How a "ping over Tailscale" reaches the phone.** Tailscale itself carries traffic; it has no push channel. Candidates for the implementer to spike:
-   - **Taildrop**: `tailscale file cp` a small status file to the phone, whose Tailscale app shows an incoming-file notification. No extra service. Needs checking on the user's phone OS.
-   - **A self-hosted notification server on the tailnet** (for example ntfy), published over Tailscale and subscribed to from the phone. More moving parts; confirm what the phone OS needs for a background notification.
+1. **How a "ping over Tailscale" reaches the phone.** Settled so far (2026-10-26): the phone is an **iPhone** and the laptop a **Mac**. Tailscale itself carries traffic and has no push channel, so the implementer spikes these in order and keeps the winner behind one small function:
+   - **Taildrop** (`tailscale file cp <file> <phone>:`): the phone's Tailscale app receives the file. Check on the real iPhone whether a locked-screen notification appears, and whether it arrives when the Tailscale VPN is off or the app has been suspended. iOS limits background networking, so this is the thing to test, not assume.
+   - **ntfy on the tailnet**: the server runs on the Mac, reached over Tailscale. As I understand it, the iOS app gets background pushes only through Apple's push service, which a self-hosted server reaches by relaying a content-free poll trigger via ntfy.sh. Verify that and what leaves the machine before adopting it.
+   - **iMessage to the user's own number through the Mac's Messages app** (`osascript`): reliable on iOS and needs no tailnet, but it is not Tailscale. A last-resort fallback, named here because the point is that the phone buzzes.
    - **`tailscale ping`** alone shows only that the phone answers; it does not notify and is not enough.
    
-   Pick the lightest one that produces a visible notification on the phone, and keep it behind a small function so it can be swapped. The user's phone OS is not recorded anywhere; ask before choosing.
+   Whatever wins, the failure path is: try it, and if it fails log it and raise a local macOS notification.
 2. **What 7:00 am means.** Read here as: a health check at 7:00 am ET on every day, and a ping if it fails (so a dead token is caught before the market opens). Alternative: the snapshot runs at about 4:05 pm ET, and a failure there is held and sent at 7:00 am the next morning. The first reads the request more naturally and catches a dead token early; confirm.
-3. **Which contracts per ticker.** Proposal: per ticker, the nearest expiry at least 30 days out, and about 90 days, 180 days and 1 year out, plus the two furthest January LEAPS; at each, the at-the-money call and the strikes nearest 25% out of the money on each side. Alternative: only contracts the user holds, which needs the account positions read. Decide before the schema.
+3. **Which contracts per ticker.** Decided 2026-10-26: record the **per-contract IV**, not a single "stock IV". A stock has no single IV; what people quote is a summary of its contracts (typically the at-the-money IV of one expiry). Scenarios reprice a specific contract after the stock moves, which moves it along the strike curve (a $75 call is at K/S 2.9 today and 1.9 if IREN is +50%), so the strike ladder is the data needed. A summary is derived from the ladder; the reverse is impossible. On 2026-10-26 the Mark-implied IV was about 93% at the Jan 2028 $40 (K/S 1.5), 91% at the Jan 2028 $75 and 88% at the Jan 2029 $40, so both the strike and the expiry matter.
+   - **Expiries:** Jan 2028 and Jan 2029 for IREN to start, named in the config by date (add the next January by hand when it lists).
+   - **Strikes:** 20 listed strikes per expiry, **fixed in dollars in the config** so each contract is one continuous daily series, with `strike / spot` recorded on every row. Chosen today by moneyness, denser near the money, snapped to listed strikes: K/S of about 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.7, 1.9, 2.1, 2.4, 2.7, 3.0, 3.3 and 3.6, which at a spot near 26 is roughly $10 to $95. Always include the strikes the user holds ($40 and $75). Revisit the set when spot leaves the band.
+   - **Both rights:** calls and puts at those strikes, so about 80 contracts per ticker per day from two `/chains` calls and roughly 20,000 rows a year. Puts are a cross-check on the calls and show the skew from the other side.
+   - **Derived, not stored:** the at-the-money IV per expiry and the term structure are a SQL view over the rows, so the script stays small.
 4. **Snapshot time.** About 4:05 pm ET (the close's final Marks) is the proposal. A second snapshot near the open would show overnight IV moves but doubles the calls.
 
 ## Acceptance
