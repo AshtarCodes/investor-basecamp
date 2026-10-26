@@ -59,6 +59,18 @@ Scenario: exit 2027-04-26, IREN +50% (26.54 to 39.80), IV flat at each leg's Mar
 
 Against today's Marks as the entry (net debit $850) the same sale is +$695, +81.8%. Holding both calls to expiry at 39.80 expires them worthless: -$754, -100%. The $40 call alone at 39.62 gave +$1,121, +79.6% of $1,408 (+64.8% against the Mark).
 
+## 2026-10-26: volume against price and reversals
+
+Data: daily candles from `pnpm schwab get /marketdata/v1/pricehistory?symbol=IREN&periodType=year&period=1&frequencyType=daily&frequency=1`, 252 days to 2026-10-23, saved in [`data/daily-ohlcv-2025-10-23_2026-10-23.csv`](data/daily-ohlcv-2025-10-23_2026-10-23.csv). Closes match the earlier closes file on every day. Run: `python3 scenarios/iren/analysis/volume_vs_price.py`. RVOL is a day's volume over the mean of the prior 20 days.
+
+- **Volume follows the size of the move, not its direction.** Correlation of |daily return| with RVOL is +0.44; of signed return with RVOL is +0.05. Up days average 1.05x and down days 1.01x. Quiet days (-5% to +5%) run 0.9x; days beyond -10% run 1.56x and days beyond +10% run 1.29x. Big down days draw more volume than big up days.
+- **Rally and tank legs trade the same volume.** Mean daily volume is 40.8M shares in the four rallies and 42.9M in the four tanks. Dollar volume falls from about $2.5B/day (Oct 2025) to about $1.7B/day (Oct 2026), so the share count held up because the price halved, not because interest rose.
+- **Reversals do not show a volume climax.** RVOL on the day of a top averages 1.18x (range 0.8 to 1.6, three tops with data) and on a bottom 1.24x (0.8 to 1.6, three bottoms). The 3 days before a top average 1.23x on the first day and 0.98x on the next; nothing separates it from an ordinary day. Three bottoms and three tops is too few to call a pattern.
+- **The one volume signature that repeats is clustered spikes, and they are not reversal signals.** Of the 10 highest-RVOL days (1.9x to 2.7x), 6 sit in two clusters (2026-05-07 to 05-11, 2026-10-14 to 10-15); the 5-day return after them ranged from -16% to +26% with no consistent sign.
+- **The current tank is the heaviest.** The 2026-09-22 to 2026-10-23 leg (-49%, 23 days) averages 49.3M shares and 1.21x RVOL, the highest of any leg.
+
+Caveats: 8 legs and 6 pivots, one stock, one year. The pivots are in hindsight (a 25% reversal confirms them days or weeks late), so volume at the pivot day was not knowable on the day. No intraday data.
+
 ## Open questions
 
 - **IREN IV history.** Schwab gives no historical option IV. Starting a daily snapshot of the Mark-implied IV (and realized vol) at a few expiries would let us measure IV against spot, which the rules in [`iv-rules.md`](iv-rules.md) currently assume.
