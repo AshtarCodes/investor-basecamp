@@ -118,6 +118,61 @@ So the daily leans from the 3% study survive a volatility-scaled threshold (heav
 
 None of this reaches a LEAP's 15-month horizon: the leans cover 5 to 10 days from one year of one stock, and a sell-off like this one (-49% in 23 days) is the largest leg of the year.
 
+## 2026-10-26: the year before, 2024-10-23 to 2025-10-22, and the April 2025 drawdown
+
+Data: `pnpm schwab get` for IREN and `$VIX` daily candles, saved as [`daily-ohlcv-2024-10-23_2025-10-22.csv`](data/daily-ohlcv-2024-10-23_2025-10-22.csv) and [`daily-closes-2024-10-23_2025-10-22.csv`](data/daily-closes-2024-10-23_2025-10-22.csv) (250 days; VIX joined by date, 3 VIX-only days dropped). It abuts the 2025-10-23 to 2026-10-23 file, so the two years are one continuous record. Run the same three scripts with this file as the first argument: `legs_vs_vix.py` takes the closes file; `volume_vs_price.py` and `timeframes.py` take the OHLCV file. The "where IREN is now" block of `timeframes.py` then describes 2025-10-22, not today.
+
+**The two years are different regimes.** IREN went $8.68 to $51.83 in 2025 (+497%) and $55.86 to $24.91 in the 2026 year (-55%). The move sizes barely differ:
+
+| | Year to 2025-10-22 | Year to 2026-10-23 |
+| --- | --- | --- |
+| Daily mean absolute move / std | 5.0% / 6.5% | 5.3% / 6.7% |
+| Daily 90th percentile absolute move | 9.9% | 11.2% |
+| Weekly mean absolute move / std | 11.4% / 13.6% | 10.3% / 13.2% |
+| Up days / down days | 132 / 116 | 110 / 140 |
+| Longest leg | +1212% in 130 days (2025-04-08 to 2025-10-14) | +115% in 40 days |
+
+**Against the VIX:** the average VIX is 18.49 in the 2025 rally legs and 19.85 in the tank legs (day-weighted), the same sign as the 17.0 vs 18.9 of the 2026 year; tanks carry a VIX 1.4 to 1.9 points higher in both. Daily IREN return against daily VIX change: -0.36. The April 2025 trough is the most extreme VIX day of the record (52.33).
+
+**Volume against the move:**
+
+- Volume still follows the size of the move (correlation of |return| with RVOL: +0.52 in 2025, +0.44 in 2026), but the direction flips with the regime. In 2025 up days averaged 1.17x and down days 0.94x, and days beyond +10% drew 1.82x against 1.39x beyond -10%. In 2026 down days were heavier (1.56x beyond -10% against 1.29x beyond +10%). Heavy volume has come on the side the stock was trending.
+- No volume climax at tops and bottoms in 2025 either: mean RVOL on a top's day 1.27x (1.0 to 1.7 over 4 tops), on a bottom's day 0.98x (0.8 to 1.3 over 4 bottoms).
+- Volume did dry up inside legs in 2025, unlike 2026: the second-half RVOL was lower than the first in 3 of 5 legs, equal in 1 and higher in 1 (the +36% rally, 0.96x to 1.34x). In 2026 it was higher in 5 of 7. So "volume does not dry up as legs mature" (the 2026 note above) is not general.
+
+**The leans, both years.** Big = beyond 1 std, high volume = top third, windows are the next 10 days:
+
+| Case | 2025 year | 2026 year |
+| --- | --- | --- |
+| Baseline, every day | +10.4% | -0.4% |
+| Down big on high volume | +14.4% (7 days) | +5.1% (20 days) |
+| Up big on high volume | +17.9% (28 days) | -6.4% (20 days) |
+| Close at a 20-day low, high volume | -7.7% (5 days) | +4.0% (20 days) |
+| Close at a 20-day high, high volume | +17.4% (38 days) | -5.6% (14 days) |
+
+- **One lean holds in both years: a heavy-volume sell-off bounces the next day** (+5.1% on 7 days; +3.3% on 20 days), and over 10 days it beats that year's baseline by +4.0 points and +5.5 points.
+- **The three others reverse.** Heavy-volume strength continued in 2025 (a trend) and faded in 2026. The "rally on high volume gives it back" and "20-day low on high volume bounces" leans of the 2026 year are not general; they describe a falling regime. Treat volume as regime-dependent until the regime is known.
+- 2025's weekly buckets hold 1 to 9 weeks and say nothing.
+
+**The April 2025 drawdown.** Peak close $13.08 on 2025-02-13, trough close $5.30 on 2025-04-08: -59.5% in 37 trading days (the intraday low was $5.125 on 04-09). The path:
+
+| Day of the drawdown | Date | Close | From peak | VIX | RVOL |
+| --- | --- | --- | --- | --- | --- |
+| 10 | 2025-02-28 | 8.24 | -37% | 19.6 | 0.97x |
+| 20 | 2025-03-14 | 7.21 | -45% | 21.8 | 0.72x |
+| 23 | 2025-03-19 | 7.20 | -45% | 19.9 | 0.99x |
+| 30 | 2025-03-28 | 6.07 | -54% | 21.6 | 1.07x |
+| 35 | 2025-04-04 | 5.94 | -55% | 45.3 | 1.67x |
+| 37 | 2025-04-08 | 5.30 | -59% | 52.3 | 1.34x |
+
+- **The first 23 days look like the current drawdown.** Day 23 of April 2025 was -45% at a VIX near 20. The 2026 drawdown stands at -49% after 23 days (2026-09-22 close $48.55, 2026-10-23 close $24.91) at a VIX near 18.
+- **The volume did not match.** In 2025 volume faded through the middle (RVOL 0.79x across the middle third, 0.56x on day 25) and spiked only at the end (1.67x on 04-04 at VIX 45). In 2026 it has risen (0.95x first half, 1.45x second half of the leg).
+- **After day 23 it fell another 26%** ($7.20 to $5.30 in 14 days), 16% of that in the 7 days to 03-28 with the VIX at 20 to 22, before the macro shock took VIX to 52. From $24.91, a 26% fall is about $18.3. That is an illustration of the size, not a forecast.
+- **The bottom came on a macro washout.** The trough close coincided with the VIX peak; the next day was +11.3% on 2.1x volume, and the stock peaked 130 trading days later at $69.56 (+1212%). That is hindsight from one episode, and a mania; it is not a base rate for a bounce.
+- The 2026 drawdown has no VIX shock behind it (idiosyncratic), so the VIX cannot mark its bottom the way it did in 2025.
+
+**Effect on the rules:** [Rule 4](iv-rules.md#rule-4-the-spot-range-to-test) (spot range -50% to +100%) rests on the 2026 year alone. The 2025 year had +61% in 7 days, +220% in 60 days off the trough and +1212% in 130 days, so +100% is not an upper bound for IREN. The IV rules are unchanged; there is still no IV history.
+
 ## Open questions
 
 - **IREN IV history.** Schwab gives no historical option IV. Starting a daily snapshot of the Mark-implied IV (and realized vol) at a few expiries would let us measure IV against spot, which the rules in [`iv-rules.md`](iv-rules.md) currently assume.

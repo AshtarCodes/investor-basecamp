@@ -44,7 +44,7 @@ Do not tie IREN's IV to the VIX level. Two of the four tank legs ran at a calm V
 
 Test a range, not a point: -50%, -30%, -15%, flat, +25%, +50%, +100% from the entry spot. Legs ran -57% to +115% in 1 to 2 months, and 39 of 251 days moved more than 10%.
 
-- **Evidence status: measured, one year.**
+- **Evidence status: measured, one year.** The year before (2024-10-23 to 2025-10-22, see [observations](observations.md)) ran +61% in 7 days and +1212% in 130 days, so +100% is not an upper bound; widen the top of the range if a scenario needs it.
 
 ## Rule 5: time
 
