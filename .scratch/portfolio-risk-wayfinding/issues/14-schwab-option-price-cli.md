@@ -38,7 +38,7 @@ The CLI is the engine's first caller. It owns Schwab I/O, mapping Schwab payload
 | `contract` root, expiry, strike, right | The parsed OCC symbol | The CLI owns the parser (the engine has none). Strip the root's padding; XSP has three spaces, SPXW two. An unsupported root (NDX, RUT, VIX…) raises `UnknownRootError`; report it as a one-line error, never default it. |
 | `contract.exercise` | Quote `exerciseType` (`E` or `A`) | ADR 0001: chosen per contract from `exerciseType`, never from whether the Underlying is an index. `--model` overrides. |
 | `valuation` | Wall-clock now, `--as-of`, or settlement minus `--dte` | Computed in the CLI; see "Remaining life". |
-| `spot` | The Underlying's quote | `theoretical`: today's price. `sell`: `--expected-spot`. |
+| `spot` | The option quote's `underlyingPrice`, `from: schwab-option-quote` | Struck with the Mark, so the solved IV is not skewed by two snapshots. `theoretical`: today's price. `sell`: `--expected-spot`. The Underlying's own quote Mark is shown in the `schwab` block. |
 | `mark` | The option quote's `mark`, `from: schwab-mark` | The engine solves the Mark-implied IV. |
 | `volatility` | `--vol`, or the IV solved at today's inputs | A scenario never re-solves the IV at the shifted inputs; see the call plan. |
 | `rate` | `TreasuryCurves(cache_dir=…).rate(valuation_date=today, expiry, fallback_percent=chain interestRate)` | `--rate` overrides, `from: cli`. The curve is read for the real now-to-expiry life and **held fixed** under `--dte` and `sell`, as the app holds it under days forward ([07](07-how-should-shocks-behave.md)). Cache on disk under `.local/schwab/` so each run starts warm. |
@@ -316,11 +316,20 @@ Pricing, IV solving and greeks live in the [engine package](16-pricing-engine-pa
 ## Open decisions
 
 - Path B OCC resolution: chain-first vs local formatter (implementer choice, phase 4).
-- **Offline European.** With no chain there is no parity forward, so an offline European option prices on `--spot` and `--div-yield`, with a warning saying so. Revisit with a `--forward` flag if an offline index run is wanted.
-- **A date `--as-of` means 4:00 pm ET** (recommended), against 9:30 am or "same clock time as now".
-- **Valuation clock.** Live "now" is the wall clock, as the engine's calendar-minute convention expects. When Schwab's quote is stale (market closed, or an old `quoteTime`) the Mark was struck earlier than the valuation, so the CLI echoes `quoteTime` and adds a stale-quote warning past some age. [07](07-how-should-shocks-behave.md) counts days forward from the market data's "as of" time; decide whether the CLI should too.
-- **Spot source.** The option quote's `underlyingPrice` and the Underlying's own quote Mark differ slightly (24.8911 against 24.905 on IREN, per the engine's comparison). Pick one, name it in `from`, and show the other in `schwab`.
-- **Hard-to-borrow.** The engine takes a `borrow_rate` and a `hard_to_borrow` flag, defaulting to none. v1 has no flag for it; add `--borrow-rate` when a held name needs it.
+
+Settled 2026-10-26, see the last comment: a date `--as-of` is 4:00 pm ET; "now" is the wall clock with a stale-quote warning past 30 minutes; spot is the option quote's `underlyingPrice`; no `--borrow-rate` in v1 (the engine takes a `borrow_rate` and a `hard_to_borrow` flag, defaulting to none, so add the flag when a held name needs it); an offline European option prices on `--spot` and `--div-yield` with a warning, and a `--forward` flag waits until an offline index run is wanted.
+
+## How this is built and verified
+
+- **Branch.** `feat/schwab-option-price-cli`, in the worktree `../investor-basecamp-worktrees/feat-schwab-option-price-cli`, off master. It includes the engine's three-name `__init__.py` export. Nothing merges into master until the user says so explicitly.
+- **No review stop between phases.** Phases 1 to 3 run through, including the live checks below, and the Answer reports the whole branch at once.
+- **Live checks** (read-only GETs, a few dozen calls, nothing near the order endpoints, [ADR 0004](../../../docs/adr/0004-no-order-placing-code.md)). The contracts are picked from the live chain and named in the Answer: an equity call (IREN), an American option on a dividend-paying ETF (SPY), and a European index option (XSP or SPXW). Each passes when:
+  - `theoretical` at now reproduces the Mark (by construction, so it checks the wiring);
+  - `sell` with exit now and `--expected-spot` equal to the spot equals `theoretical`;
+  - for the index, the parity forward is within a few cents of the index level, and the dividend rule is named;
+  - `crossCheck` runs against the `ANALYTICAL` call and the gaps are recorded, not asserted (see the cross-check notes above).
+- **Fixtures.** Trimmed live responses (option quote, Underlying quote with fundamentals, chain slice, `ANALYTICAL` slice), run through the existing redaction, committed under `tools/schwab/tests/fixtures/`. The Schwab-side tests replay them offline.
+- **If live disagrees with the plan.** A CLI cause (mapping, units, instants) is fixed on the branch. An engine or model cause (a price, the forward, the IV) is not changed here: stop and report with the numbers.
 
 ## Prototype pointer
 
@@ -344,3 +353,11 @@ QuantLib engine spike and verdict: branch `prototype/quantlib-engine` (commit ea
 - **Scenarios reuse the worker's `price_contract`** with one Shock, so the CLI and the app agree by construction and the CLI repeats no shock logic. This replaces the earlier plan of a CLI-side two-call path with a parity test, which was only needed for the past-life stress.
 - **No Greeks at the exit instant in v1.** The batch returns prices only. Greeks stay on `theoretical` at now, with Schwab's beside them. [20](20-engine-greeks-at-a-scenario-point.md) adds Greeks at a scenario point to the engine.
 - **Ticket 15 is resolved**, so its findings are folded into the cross-check notes above.
+
+**Decided 2026-10-26, grilling before implementation:**
+
+- **A date `--as-of` means 4:00 pm ET.**
+- **Valuation clock.** Now is the wall clock. The JSON echoes `quoteTime`, and a stale-quote warning appears when the quote is more than 30 minutes old (always true when the market is closed).
+- **Spot source.** The option quote's `underlyingPrice`, `from: schwab-option-quote`. The Underlying's own price is shown in the `schwab` block.
+- **Left out of v1.** `--borrow-rate`, and a `--forward` flag for offline European options.
+- **Build and verification.** See "How this is built and verified": a branch and worktree, no review stop between phases, live checks run by the implementer, real trimmed fixtures, and engine behaviour left unchanged.
