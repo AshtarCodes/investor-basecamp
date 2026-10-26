@@ -65,11 +65,11 @@ Data: daily candles from `pnpm schwab get /marketdata/v1/pricehistory?symbol=IRE
 
 - **Volume follows the size of the move, not its direction.** Correlation of |daily return| with RVOL is +0.44; of signed return with RVOL is +0.05. Up days average 1.05x and down days 1.01x. Quiet days (-5% to +5%) run 0.9x; days beyond -10% run 1.56x and days beyond +10% run 1.29x. Big down days draw more volume than big up days.
 - **Rally and tank legs trade the same volume.** Mean daily volume is 40.8M shares in the four rallies and 42.9M in the four tanks. Dollar volume falls from about $2.5B/day (Oct 2025) to about $1.7B/day (Oct 2026), so the share count held up because the price halved, not because interest rose.
-- **Reversals do not show a volume climax.** RVOL on the day of a top averages 1.18x (range 0.8 to 1.6, three tops with data) and on a bottom 1.24x (0.8 to 1.6, three bottoms). The 3 days before a top average 1.23x on the first day and 0.98x on the next; nothing separates it from an ordinary day. Three bottoms and three tops is too few to call a pattern.
-- **The one volume signature that repeats is clustered spikes, and they are not reversal signals.** Of the 10 highest-RVOL days (1.9x to 2.7x), 6 sit in two clusters (2026-05-07 to 05-11, 2026-10-14 to 10-15); the 5-day return after them ranged from -16% to +26% with no consistent sign.
+- **Reversals do not show a volume climax.** RVOL on the day of a top averages 1.18x (range 0.8 to 1.6, three tops with data) and on a bottom 1.24x (0.8 to 1.6, three bottoms). The days around a top (-3 to +3) average 0.92x to 1.23x, so a top looks like an ordinary day. Three bottoms and three tops is too few to call a pattern.
+- **The one volume signature that repeats is clustered spikes, and they are not reversal signals.** Of the 10 highest-RVOL days (1.9x to 2.7x), 5 sit in two clusters (2026-05-07 to 05-11, 2026-10-14 to 10-15); the 5-day return after them ranged from -16% to +26% with no consistent sign.
 - **The current tank is the heaviest.** The 2026-09-22 to 2026-10-23 leg (-49%, 23 days) averages 49.3M shares and 1.21x RVOL, the highest of any leg.
 
-Caveats: 8 legs and 6 pivots, one stock, one year. The pivots are in hindsight (a 25% reversal confirms them days or weeks late), so volume at the pivot day was not knowable on the day. No intraday data.
+Caveats: 8 legs and 7 interior pivots, one stock, one year. The pivots are in hindsight (a 25% reversal confirms them days or weeks late), so volume at the pivot day was not knowable on the day. No intraday data.
 
 ## Open questions
 
