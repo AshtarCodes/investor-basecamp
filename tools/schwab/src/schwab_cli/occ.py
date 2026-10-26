@@ -21,7 +21,7 @@ def parse_occ(symbol: str) -> OccSymbol:
     """Parse a 21-character OCC symbol, as Schwab prints it, with the root's padding stripped."""
     match = _OCC.fullmatch(symbol) if len(symbol) == _OCC_LENGTH else None
     if match is None:
-        msg = f"not an OCC option symbol (root padded to 6, YYMMDD, C or P, 8-digit strike): {symbol!r}"
+        msg = f"not an OCC option symbol (padded root, YYMMDD, C or P, 8-digit strike): {symbol!r}"
         raise ValueError(msg)
     ymd = match["ymd"]
     try:

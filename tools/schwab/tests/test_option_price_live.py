@@ -119,7 +119,8 @@ def test_a_european_forward_scales_with_the_exit_spot():
         )
     )
     assert sell["results"]["sell"]["saleProceeds"] == pytest.approx(twin.price, rel=1e-6)
-    assert sell["inputs"]["forward"]["value"] == pytest.approx(forward, rel=1e-12)
+    # The echo is the forward actually priced: it moves with the exit spot.
+    assert sell["inputs"]["forward"]["value"] == pytest.approx(forward * 1.02, rel=1e-9)
 
 
 def test_the_parity_forward_is_strike_plus_discounted_call_minus_put_from_the_chain():
@@ -411,3 +412,13 @@ def test_a_european_sell_on_a_vol_override_scales_the_forward_with_spot():
         forward={"value": forward * 1.02, "from": "t"},
     )
     assert sell["results"]["sell"]["saleProceeds"] == pytest.approx(expected, abs=1e-9)
+
+
+def test_a_dte_stress_returns_no_greeks_and_a_vol_override_still_gets_the_iv_gap():
+    stressed, _ = run("iren", vol=100.0, dte=30)
+    assert stressed["results"]["theoretical"]["ours"]["greeks"] is None
+    assert stressed["results"]["theoretical"]["ours"]["leisenReimerCheck"] is None
+    now, _ = run("iren", vol=100.0)
+    assert now["results"]["theoretical"]["ours"]["greeks"] is not None
+    gap = now["results"]["theoretical"]["crossCheck"]["ivGapVolPts"]
+    assert gap == pytest.approx(100.0 - now["schwab"]["volatility"])

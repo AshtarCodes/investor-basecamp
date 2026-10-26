@@ -57,7 +57,10 @@ def resolve_instant(
     else:
         instant = now.astimezone(UTC)
     if instant >= settlement:
-        msg = f"the {_name(mode)} instant {instant.isoformat()} is at or after the Settlement instant {settlement.isoformat()}"
+        msg = (
+            f"the {_name(mode)} instant {instant.isoformat()} is at or after "
+            f"the Settlement instant {settlement.isoformat()}"
+        )
         raise ValueError(msg)
     if not offline and instant < now:
         msg = (

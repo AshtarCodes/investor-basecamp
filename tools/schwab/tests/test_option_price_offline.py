@@ -190,3 +190,16 @@ def test_sell_spot_flag_is_refused():
 def test_sell_at_or_after_settlement_is_an_error():
     with pytest.raises(ValueError, match="Settlement"):
         run(mode="sell", expected_spot=720.0, entry=1.0, as_of="2026-11-20", spot=None)
+
+
+def test_a_zero_spot_is_the_engines_error_not_a_silent_one():
+    with pytest.raises(ValueError, match="spot"):
+        run(spot=0.0)
+
+
+def test_a_zero_rate_is_a_valid_rate():
+    assert run(rate=0.0)["inputs"]["rate"]["value"] == 0.0
+
+
+def test_offline_dte_has_no_greeks():
+    assert run(dte=10)["results"]["theoretical"]["ours"]["greeks"] is None

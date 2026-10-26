@@ -141,8 +141,8 @@ def _offline_inputs(args: OptionPriceArgs, occ: OccSymbol) -> PricingInputs:
     return PricingInputs(
         occ=occ,
         exercise=exercise,
-        spot=Sourced(value=spot_value or 1.0, from_="cli"),
-        rate=Sourced(value=_decimal(args.rate or 0.0), from_="cli"),
+        spot=Sourced(value=spot_value if spot_value is not None else 1.0, from_="cli"),
+        rate=Sourced(value=_decimal(args.rate if args.rate is not None else 0.0), from_="cli"),
         rate_curve_date=None,
         mark=None,
         volatility=None
@@ -291,6 +291,14 @@ def _cross_check(
     }
 
 
+def _scaled_forward(inputs: PricingInputs, spot: Sourced) -> Sourced | None:
+    """An explicit forward moves with spot, as the worker's Shock does."""
+    forward = inputs.forward
+    if forward is None or spot.value == inputs.spot.value:
+        return forward
+    return Sourced(value=forward.value * spot.value / inputs.spot.value, from_=forward.from_)
+
+
 def _request(
     inputs: PricingInputs,
     valuation: datetime,
@@ -299,9 +307,7 @@ def _request(
     use_mark: bool,
     greeks: bool = False,
 ) -> PriceRequest:
-    forward = inputs.forward
-    if forward is not None and spot.value != inputs.spot.value:
-        forward = Sourced(value=forward.value * spot.value / inputs.spot.value, from_=forward.from_)
+    forward = _scaled_forward(inputs, spot)
     occ = inputs.occ
     cross_check = greeks and inputs.exercise == "american"
     return PriceRequest(
@@ -381,7 +387,7 @@ def _inputs_json(inputs: PricingInputs, spot: Sourced, iv_value: float | None) -
             "yield": _sourced_json(inputs.continuous_yield, as_percent=True),
         }
     if inputs.forward is not None:
-        out["forward"] = _sourced_json(inputs.forward)
+        out["forward"] = _sourced_json(_scaled_forward(inputs, spot))
     return out
 
 
@@ -412,13 +418,22 @@ def _net_pnl(per_share: float, args: OptionPriceArgs) -> dict[str, Any]:
     return {"perShare": per_share, "dollars": per_share * 100 * args.contracts}
 
 
-def _theoretical(inputs: PricingInputs, instant: datetime, now: datetime) -> dict[str, Any]:
-    """The value at the valuation instant. At now it is a single price with Greeks."""
+def _theoretical(
+    inputs: PricingInputs, instant: datetime, now: datetime, *, greeks: bool
+) -> dict[str, Any]:
+    """The value at the valuation instant: one price, with Greeks unless `--dte` stresses it."""
     use_mark = _uses_mark(inputs)
     if use_mark and instant != now:
         return _scenario(inputs, instant, now, inputs.spot)
-    result = price(_request(inputs, instant, spot=inputs.spot, use_mark=use_mark, greeks=True))
-    iv = result.iv.value if result.iv else None
+    result = price(_request(inputs, instant, spot=inputs.spot, use_mark=use_mark, greeks=greeks))
+    # With `--vol` there is no Mark-implied IV; the gap to Schwab's IV is then the override's.
+    iv = (
+        result.iv.value
+        if result.iv
+        else result.inputs.volatility.value
+        if result.inputs.volatility
+        else None
+    )
     return {
         "inputs": _inputs_json(inputs, inputs.spot, iv),
         "timeToExpiry": _time_to_expiry(inputs.occ, instant),
@@ -486,7 +501,8 @@ def _sell_block(
     exit_instant: datetime,
     now: datetime,
     entry: Sourced,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any], list[Any]]:
+    """The sell block, the `inputs` echo for the exit, and the engine flags."""
     """Sell before expiration: our value at the exit instant if the stock is `--expected-spot`."""
     assert args.expected_spot is not None
     exit_spot = Sourced(value=args.expected_spot, from_="cli")
@@ -512,7 +528,7 @@ def _sell_block(
         "netPnL": None if proceeds is None else _net_pnl(proceeds - entry.value, args),
         "iv": priced["results"]["ours"].get("iv"),
     }
-    return block | {"_inputs": priced["inputs"], "_flags": priced["flags"]}
+    return block, priced["inputs"], list(priced["flags"])
 
 
 def run_option_price(
@@ -552,7 +568,7 @@ def run_option_price(
             dte=args.dte,
             offline=args.offline,
         )
-        block = _theoretical(inputs, instant, now)
+        block = _theoretical(inputs, instant, now, greeks=args.dte is None)
         out["inputs"] = block["inputs"]
         out["timeToExpiry"] = block["timeToExpiry"]
         flags += block["flags"]
@@ -575,10 +591,11 @@ def run_option_price(
             dte=args.dte,
             offline=args.offline,
         )
-        block = _sell_block(args, inputs, exit_instant, now, _entry(args, inputs))
-        out["inputs"] = block.pop("_inputs")
+        block, out["inputs"], sell_flags = _sell_block(
+            args, inputs, exit_instant, now, _entry(args, inputs)
+        )
         out["timeToExpiry"] = block["timeToExpiry"]
-        flags += block.pop("_flags")
+        flags += sell_flags
         results["sell"] = block
 
     out["results"] = results
