@@ -6,7 +6,7 @@ residual. A scenario (`sell`, `theoretical --dte`) calls the worker's `price_con
 Shock, so the CLI repeats none of the Shock semantics.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from typing import Any, Literal
 
@@ -19,10 +19,24 @@ from pricing_engine import (
     price_contract,
     settlement_instant,
 )
+from pricing_engine import TreasuryCurves
 from pricing_engine.models import CashDividend, Contract, Numerics, Sourced
 
 from schwab_cli.instants import days_between, resolve_instant
 from schwab_cli.occ import OccSymbol, parse_occ
+from schwab_cli.schwab_inputs import (
+    NEW_YORK,
+    Get,
+    SchwabDataError,
+    default_curves,
+    european_forward,
+    fetch_analytical_value,
+    fetch_chain_facts,
+    fetch_fundamentals,
+    fetch_option_quote,
+    map_dividends,
+    quote_age_warning,
+)
 
 Mode = Literal["theoretical", "expiry", "sell", "both"]
 Exercise = Literal["american", "european"]
@@ -139,6 +153,144 @@ def _offline_inputs(args: OptionPriceArgs, occ: OccSymbol) -> PricingInputs:
         dividend_info=info,
         warnings=warnings,
     )
+
+
+def _live_inputs(
+    args: OptionPriceArgs,
+    occ: OccSymbol,
+    now: datetime,
+    get: Get,
+    curves: TreasuryCurves | None,
+) -> PricingInputs:
+    """Gather one contract's inputs from Schwab and the Treasury curve (every call is a GET)."""
+    quote = fetch_option_quote(get, occ)
+    schwab: dict[str, Any] = {
+        "underlying": quote.underlying,
+        "mark": quote.mark,
+        "bid": quote.bid,
+        "ask": quote.ask,
+        "volatility": quote.volatility,
+        "quoteTime": quote.quote_time.isoformat() if quote.quote_time else None,
+        "underlyingPrice": quote.underlying_price,
+        "greeks": quote.greeks,
+        "theoreticalOptionValue": quote.theoretical_value,
+    }
+    warnings = [w for w in [quote_age_warning(quote.quote_time, now)] if w]
+    exercise: Exercise = (
+        quote.exercise if args.model == "auto" else args.model  # type: ignore[assignment]
+    )
+    mark = Sourced(value=quote.mark, from_="schwab-mark")
+    spot = Sourced(
+        value=args.spot if args.spot is not None else quote.underlying_price,
+        from_="cli" if args.spot is not None else "schwab-option-quote",
+    )
+    volatility = (
+        None if args.vol is None else Sourced(value=_decimal(args.vol, args.vol_unit), from_="cli")
+    )
+    if args.mode == "expiry":
+        return PricingInputs(
+            occ=occ,
+            exercise=exercise or "american",
+            spot=spot,
+            rate=Sourced(value=0.0, from_="unused"),
+            rate_curve_date=None,
+            mark=mark,
+            volatility=volatility,
+            dividends=(),
+            continuous_yield=None,
+            dividend_info={"treatment": "none", "rule": "not-used-by-expiry"},
+            schwab=schwab,
+            default_entry=mark,
+            warnings=warnings,
+        )
+    if not exercise:
+        raise SchwabDataError("Schwab's quote has no exerciseType: pass --model")
+
+    fundamentals, underlying_mark = fetch_fundamentals(get, quote.underlying)
+    schwab["underlyingQuote"] = {"symbol": quote.underlying, "price": underlying_mark}
+    chain = fetch_chain_facts(get, quote.underlying, occ)
+    chain_rate = chain.interest_rate
+    schwab["chainInterestRate"] = chain_rate
+    today = now.astimezone(NEW_YORK).date()
+    if args.rate is not None:
+        rate: Sourced = Sourced(value=_decimal(args.rate), from_="cli")
+        curve_date = None
+    else:
+        curves = curves or default_curves()
+        quoted = curves.rate(valuation_date=today, expiry=occ.expiry, fallback_percent=chain_rate)
+        rate, curve_date = quoted, quoted.curve_date.isoformat() if quoted.curve_date else None
+        if rate.from_ == "schwab-chain-fallback":
+            warnings.append("no Treasury curve: the rate is Schwab's chain interestRate")
+    treatment = map_dividends(
+        fundamentals,
+        valuation_date=today,
+        expiry=occ.expiry,
+        no_div=args.no_div,
+        div_yield_percent=args.div_yield,
+    )
+    warnings += treatment.warnings
+    dividends, yield_, info = treatment.dividends, treatment.continuous_yield, treatment.info
+    forward = None
+    if exercise == "european":
+        life = (settlement_instant(occ.root, occ.expiry) - now).total_seconds() / SECONDS_PER_YEAR
+        forward = european_forward(occ, chain, rate=rate.value, life_years=life)
+        if args.div_yield is not None or dividends or yield_ is not None:
+            warnings.append(
+                "a European option is priced on its parity forward, which holds the dividends"
+            )
+        dividends, yield_ = (), None
+        info = {"treatment": "in-parity-forward", "rule": info["rule"]}
+    return PricingInputs(
+        occ=occ,
+        exercise=exercise,
+        spot=spot,
+        rate=rate,
+        rate_curve_date=curve_date,
+        mark=mark,
+        volatility=volatility,
+        dividends=tuple(dividends),
+        continuous_yield=yield_,
+        dividend_info=info,
+        forward=forward,
+        schwab=schwab,
+        default_entry=mark,
+        warnings=warnings,
+    )
+
+
+def _cross_check(
+    inputs: PricingInputs, our_iv: float | None, now: datetime, get: Get
+) -> dict[str, Any] | None:
+    """Our value at Schwab's IV, against Schwab's ANALYTICAL value on our rate (informational).
+
+    Always at today's inputs, so a `--dte` stress changes our price but not this.
+    """
+    schwab = inputs.schwab
+    if schwab is None or inputs.mark is None or schwab.get("volatility") is None:
+        return None
+    schwab_iv = schwab["volatility"]
+    at_schwab_iv = replace(
+        inputs, volatility=Sourced(value=schwab_iv / 100, from_="schwab-volatility")
+    )
+    ours = price(_request(at_schwab_iv, now, spot=inputs.spot, use_mark=False)).price
+    analytical = fetch_analytical_value(
+        get,
+        schwab["underlying"],
+        inputs.occ,
+        rate_percent=_percent(inputs.rate.value),
+        spot=inputs.spot.value,
+        volatility_percent=schwab_iv,
+        now=now,
+    )
+    return {
+        "ivGapVolPts": None if our_iv is None else _percent(our_iv) - schwab_iv,
+        "ourValueAtSchwabIv": ours,
+        "vsMark": None if ours is None else ours - inputs.mark.value,
+        "schwabAnalytical": analytical,
+        "vsSchwabAnalytical": None if ours is None or analytical is None else ours - analytical,
+        "schwabDefaultTheoretical": schwab.get("theoreticalOptionValue"),
+        "chainInterestRate": schwab.get("chainInterestRate"),
+    }
 
 
 def _request(
@@ -276,6 +428,7 @@ def _theoretical(
         "timeToExpiry": _time_to_expiry(inputs.occ, instant),
         "flags": list(result.flags),
         "results": {"ours": _ours_json(result)},
+        "iv": iv,
     }
 
 
@@ -301,6 +454,7 @@ def _scenario(
         "inputs": _inputs_json(inputs, spot, priced.iv.value),
         "timeToExpiry": _time_to_expiry(inputs.occ, instant),
         "flags": flags,
+        "iv": priced.iv.value,
         "results": {
             "ours": {
                 "value": priced.prices[0],
@@ -365,13 +519,25 @@ def _sell_block(
     return block | {"_inputs": priced["inputs"], "_flags": priced["flags"]}
 
 
-def run_option_price(args: OptionPriceArgs, *, now: datetime) -> dict[str, Any]:
-    """The JSON of one `schwab option price` run."""
+def run_option_price(
+    args: OptionPriceArgs,
+    *,
+    now: datetime,
+    get: Get | None = None,
+    curves: TreasuryCurves | None = None,
+) -> dict[str, Any]:
+    """The JSON of one `schwab option price` run. `get` and `curves` are the two network seams."""
     _validate(args)
     occ = parse_occ(args.symbol)
-    if not args.offline:
-        raise ValueError("live runs are not wired yet")
-    inputs = _offline_inputs(args, occ)
+    settlement_instant(occ.root, occ.expiry)  # an unsupported root fails before any network call
+    if args.offline:
+        inputs = _offline_inputs(args, occ)
+    else:
+        if get is None:
+            from schwab_cli.http_client import schwab_get
+
+            get = schwab_get
+        inputs = _live_inputs(args, occ, now, get, curves)
     out: dict[str, Any] = {"contract": _contract_json(occ, inputs)}
     if inputs.schwab is not None:
         out["schwab"] = inputs.schwab
@@ -393,6 +559,10 @@ def run_option_price(args: OptionPriceArgs, *, now: datetime) -> dict[str, Any]:
         out["timeToExpiry"] = block["timeToExpiry"]
         flags += block["flags"]
         results["theoretical"] = block["results"]
+        if not args.offline:
+            check = _cross_check(inputs, block["iv"], now, get)
+            if check is not None:
+                results["theoretical"]["crossCheck"] = check
 
     if args.mode in ("expiry", "both"):
         results["expiry"] = _expiry_block(args, inputs, _entry(args, inputs))

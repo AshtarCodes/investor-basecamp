@@ -1,0 +1,53 @@
+{
+ "IREN": {
+  "assetMainType": "EQUITY",
+  "assetSubType": "COE",
+  "fundamental": {
+   "avg10DaysVolume": 63625190.0,
+   "avg1YearVolume": 38529258.0,
+   "divAmount": 0.0,
+   "divFreq": 0,
+   "divPayAmount": 0.0,
+   "divYield": 0.0,
+   "eps": -2.22262,
+   "fundLeverageFactor": 0.0,
+   "lastEarningsDate": "2026-08-27T00:00:00Z",
+   "peRatio": -11.20524,
+   "sharesOutstanding": 394058648
+  },
+  "quote": {
+   "52WeekHigh": 76.87,
+   "52WeekLow": 23.72,
+   "askMICId": "XNAS",
+   "askPrice": 25.22,
+   "askSize": 300,
+   "askTime": 1793026145813,
+   "bidMICId": "IEGX",
+   "bidPrice": 25.21,
+   "bidSize": 800,
+   "bidTime": 1793026146141,
+   "closePrice": 24.905,
+   "highPrice": 25.26,
+   "lastMICId": "XADF",
+   "lastPrice": 25.215,
+   "lastSize": 100,
+   "lowPrice": 23.72,
+   "mark": 25.215,
+   "markChange": 0.31,
+   "markPercentChange": 1.24472997,
+   "netChange": 0.31,
+   "netPercentChange": 1.24472997,
+   "openPrice": 24.028,
+   "postMarketChange": 0.0,
+   "postMarketPercentChange": 0.0,
+   "quoteTime": 1793026146141,
+   "securityStatus": "Normal",
+   "totalVolume": 23158076,
+   "tradeTime": 1793026145350
+  },
+  "quoteType": "NBBO",
+  "realtime": true,
+  "ssid": 77026444,
+  "symbol": "IREN"
+ }
+}

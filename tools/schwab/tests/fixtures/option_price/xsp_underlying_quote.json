@@ -1,0 +1,33 @@
+{
+ "$XSP": {
+  "assetMainType": "INDEX",
+  "fundamental": {
+   "avg10DaysVolume": 0.0,
+   "avg1YearVolume": 0.0,
+   "divAmount": 0.0,
+   "divFreq": 0,
+   "divPayAmount": 0.0,
+   "divYield": 0.0,
+   "eps": 0.0,
+   "fundLeverageFactor": 0.0,
+   "peRatio": 0.0
+  },
+  "quote": {
+   "52WeekHigh": 784.45,
+   "52WeekLow": 631.69,
+   "closePrice": 762.37,
+   "highPrice": 769.04,
+   "lastPrice": 768.78,
+   "lowPrice": 763.97,
+   "netChange": 6.41,
+   "netPercentChange": 0.84079909,
+   "openPrice": 763.97,
+   "securityStatus": "Normal",
+   "totalVolume": 0,
+   "tradeTime": 1793026148073
+  },
+  "realtime": true,
+  "ssid": 1897240671,
+  "symbol": "$XSP"
+ }
+}
