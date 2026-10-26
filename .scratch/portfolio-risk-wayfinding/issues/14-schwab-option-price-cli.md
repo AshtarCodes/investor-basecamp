@@ -361,3 +361,32 @@ QuantLib engine spike and verdict: branch `prototype/quantlib-engine` (commit ea
 - **Spot source.** The option quote's `underlyingPrice`, `from: schwab-option-quote`. The Underlying's own price is shown in the `schwab` block.
 - **Left out of v1.** `--borrow-rate`, and a `--forward` flag for offline European options.
 - **Build and verification.** See "How this is built and verified": a branch and worktree, no review stop between phases, live checks run by the implementer, real trimmed fixtures, and engine behaviour left unchanged.
+
+## Answer: phases 1 to 3
+
+Built on branch `feat/schwab-option-price-cli` (worktree `../investor-basecamp-worktrees/feat-schwab-option-price-cli`), not merged. Phase 4 (Path B, flags to OCC) is still open; the README section is done.
+
+**What was built.** `tools/schwab/src/schwab_cli/`: `occ.py` (parser), `instants.py` (valuation and exit instant), `schwab_inputs.py` (the read-only GETs and the Schwab-to-engine mapping), `option_price.py` (modes, the engine call plan, JSON), and the `option price` subcommand in `cli.py`, which imports the engine only inside its handler (a test proves `login` and `get` never load QuantLib). The engine's `__init__.py` now exports `price_contract`, `BatchContract` and `Shock`; the schema did not move. 100 tests in `tools/schwab/tests/` run the real engine with `schwab_get` and `TreasuryCurves(fetch=…)` faked from live fixtures under `tests/fixtures/option_price/`.
+
+**Live verification, 2026-10-26 about 10:45 to 11:00 ET, all GETs.** Contracts: `IREN  270115C00025000` (American equity call, no dividends), `SPY   270115C00765000` (American, one quarterly dividend), `XSP   261218C00768000` and `SPXW  261218C07700000` (European index calls).
+
+| Check | IREN | SPY | XSP |
+| --- | --- | --- | --- |
+| `theoretical` reproduces the Mark | 4.9000000000 vs 4.9 | 25.3000000000 vs 25.3 | 19.4999999999 vs 19.5 |
+| Model chosen | `american_closed_form` | `american_fd_cash_drop`, rule `quarterly-from-next-ex-date`, 1 dividend | `black_76`, rule `none`, `in-parity-forward` |
+| `sell`, exit now, `--expected-spot` at the spot | proceeds minus Mark −0.027232 vs delta × spot move −0.027221 | −0.008429 vs −0.008428 | −0.011037 vs −0.011039 |
+| Mark-implied IV vs Schwab IV (vol points) | 102.5 vs 100.3 (+2.1) | 15.2 vs 12.9 (+2.3) | 14.7 vs 12.8 (+1.9) |
+| `vsSchwabAnalytical` (ours at Schwab's IV minus Schwab's value) | +0.0015 on 4.80 | −0.073 on 22.0 | −0.55 on 17.9 |
+
+`sell` could not be checked for exact equality live, because the spot ticks between two runs. The check above uses the run's own Mark and spot, and agrees to about 1e-5. Exact equality is a fixture test.
+
+**Findings to read.**
+- **The ticket's index forward check was mis-stated.** It said the parity forward would be "within a few cents of the index level". A forward is above the index by the carry. XSP: forward 772.50 against index 768.94, implied dividend yield about 0.88% at the Treasury rate. SPXW: 7724.95 against 7688.88. Both are plausible, and the index and its Mark are reproduced; what the plan should have said is "forward near spot × e^((r − q)T) with q near the index yield".
+- **`ANALYTICAL` on an index disagrees with us by more than on equities** (XSP −0.55, SPXW −5.3 on about 160). The chain reports `dividendYield: 0.0`, and Schwab's formula has no parity forward, so it probably prices a European index option on spot alone; this was not isolated. On the American equity (IREN) the two agree to a quarter of a cent. SPY is 7 cents low, and whether that is the discrete dividend, the time convention or the model was not isolated either (ticket 15 and `docs/research/pricing-engine-vs-schwab-iren.md` are the open threads). The CLI only reports the gap.
+- **The `strike` filter is ignored with `strategy=ANALYTICAL`:** the call returns every strike of the expiry, so the CLI picks its row by symbol.
+- **The forward uses the chain's call and put Marks from one response,** not the option quote's Mark and the chain's opposite Mark, which are two snapshots.
+- `vsMark` is `ourValueAtSchwabIv − Mark` (the sketch's numbers imply it; our own value is the Mark by construction).
+
+**Error paths run live:** NDX fails before any network call; a symbol with no quote says to check the OCC symbol; `--dte 400` and a past `--as-of` point at `--offline`; a live `--as-of` on `theoretical` points at `--dte`, `sell` and `--offline`.
+
+**Left alone.** No engine price changed. One bug was found and fixed in my own code by a test: `settlement − timedelta(days=n)` on a New York datetime is wall-clock arithmetic and is an hour off across the 2026-11-01 fall-back, so the settlement is converted to UTC first.

@@ -8,7 +8,7 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
@@ -19,6 +19,8 @@ from schwab_cli.http_client import SchwabResponse
 from schwab_cli.occ import OccSymbol
 
 Get = Callable[[str], SchwabResponse]
+
+_EXERCISE: dict[str, Literal["american", "european"]] = {"A": "american", "E": "european"}
 
 NEW_YORK = ZoneInfo("America/New_York")
 STALE_QUOTE_SECONDS = 30 * 60
@@ -38,7 +40,7 @@ class OptionQuote:
     theoretical_value: float | None
     greeks: dict[str, float | None]
     quote_time: datetime | None
-    exercise: str
+    exercise: Literal["american", "european"] | None
     underlying: str
 
 
@@ -107,7 +109,7 @@ def fetch_option_quote(get: Get, occ: OccSymbol) -> OptionQuote:
         theoretical_value=quote_.get("theoreticalOptionValue"),
         greeks={name: quote_.get(name) for name in ("delta", "gamma", "theta", "vega", "rho")},
         quote_time=datetime.fromtimestamp(quote_time / 1000, tz=UTC) if quote_time else None,
-        exercise={"A": "american", "E": "european"}.get(reference.get("exerciseType"), ""),
+        exercise=_EXERCISE.get(reference.get("exerciseType") or ""),
         underlying=reference.get("underlying") or occ.root,
     )
 

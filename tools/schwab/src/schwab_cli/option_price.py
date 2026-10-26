@@ -176,9 +176,7 @@ def _live_inputs(
         "theoreticalOptionValue": quote.theoretical_value,
     }
     warnings = [w for w in [quote_age_warning(quote.quote_time, now)] if w]
-    exercise: Exercise = (
-        quote.exercise if args.model == "auto" else args.model  # type: ignore[assignment]
-    )
+    exercise = quote.exercise if args.model == "auto" else args.model
     mark = Sourced(value=quote.mark, from_="schwab-mark")
     spot = Sourced(
         value=args.spot if args.spot is not None else quote.underlying_price,
@@ -190,7 +188,7 @@ def _live_inputs(
     if args.mode == "expiry":
         return PricingInputs(
             occ=occ,
-            exercise=exercise or "american",
+            exercise=exercise or "american",  # expiry needs no model, only a valid contract
             spot=spot,
             rate=Sourced(value=0.0, from_="unused"),
             rate_curve_date=None,
@@ -319,7 +317,7 @@ def _request(
         rate=inputs.rate,
         mark=inputs.mark if use_mark else None,
         volatility=None if use_mark else inputs.volatility,
-        **({"continuous_yield": inputs.continuous_yield} if inputs.continuous_yield else {}),
+        continuous_yield=inputs.continuous_yield or Sourced(value=0.0, from_="default"),
         dividends=list(inputs.dividends),
         forward=forward,
         greeks=greeks,
@@ -414,13 +412,11 @@ def _net_pnl(per_share: float, args: OptionPriceArgs) -> dict[str, Any]:
     return {"perShare": per_share, "dollars": per_share * 100 * args.contracts}
 
 
-def _theoretical(
-    args: OptionPriceArgs, inputs: PricingInputs, instant: datetime, now: datetime
-) -> dict[str, Any]:
+def _theoretical(inputs: PricingInputs, instant: datetime, now: datetime) -> dict[str, Any]:
     """The value at the valuation instant. At now it is a single price with Greeks."""
     use_mark = _uses_mark(inputs)
     if use_mark and instant != now:
-        return _scenario(args, inputs, instant, now, inputs.spot)
+        return _scenario(inputs, instant, now, inputs.spot)
     result = price(_request(inputs, instant, spot=inputs.spot, use_mark=use_mark, greeks=True))
     iv = result.iv.value if result.iv else None
     return {
@@ -433,7 +429,6 @@ def _theoretical(
 
 
 def _scenario(
-    args: OptionPriceArgs,
     inputs: PricingInputs,
     instant: datetime,
     now: datetime,
@@ -496,8 +491,9 @@ def _sell_block(
     assert args.expected_spot is not None
     exit_spot = Sourced(value=args.expected_spot, from_="cli")
     use_mark = _uses_mark(inputs)
+    priced: dict[str, Any]
     if use_mark:
-        priced = _scenario(args, inputs, exit_instant, now, exit_spot)
+        priced = _scenario(inputs, exit_instant, now, exit_spot)
     else:
         result = price(_request(inputs, exit_instant, spot=exit_spot, use_mark=False))
         priced = {
@@ -532,11 +528,13 @@ def run_option_price(
     settlement_instant(occ.root, occ.expiry)  # an unsupported root fails before any network call
     if args.offline:
         inputs = _offline_inputs(args, occ)
+        live_get = None
     else:
         if get is None:
             from schwab_cli.http_client import schwab_get
 
             get = schwab_get
+        live_get = get
         inputs = _live_inputs(args, occ, now, get, curves)
     out: dict[str, Any] = {"contract": _contract_json(occ, inputs)}
     if inputs.schwab is not None:
@@ -554,13 +552,13 @@ def run_option_price(
             dte=args.dte,
             offline=args.offline,
         )
-        block = _theoretical(args, inputs, instant, now)
+        block = _theoretical(inputs, instant, now)
         out["inputs"] = block["inputs"]
         out["timeToExpiry"] = block["timeToExpiry"]
         flags += block["flags"]
         results["theoretical"] = block["results"]
-        if not args.offline:
-            check = _cross_check(inputs, block["iv"], now, get)
+        if live_get is not None:
+            check = _cross_check(inputs, block["iv"], now, live_get)
             if check is not None:
                 results["theoretical"]["crossCheck"] = check
 

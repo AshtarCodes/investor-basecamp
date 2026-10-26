@@ -209,12 +209,6 @@ def test_the_cross_check_belongs_to_theoretical_and_both_only():
 # dividends
 
 
-def run_with_fundamentals(**fundamental):
-    fake = FakeSchwab("spy")
-    fake.fundamental.update(fundamental)
-    return run("spy", fake=fake, **fundamental.pop("flags", {}))
-
-
 def spy(fundamental_updates, **flags):
     fake = FakeSchwab("spy")
     fake.fundamental.update(fundamental_updates)
@@ -287,7 +281,7 @@ def test_without_a_curve_the_chain_rate_is_a_flagged_fallback():
 
 
 def test_vol_flag_replaces_the_mark_implied_iv_but_not_the_entry():
-    out, fake = run("iren", vol=100.0, mode="sell", expected_spot=30.0)
+    out, _ = run("iren", vol=100.0, mode="sell", expected_spot=30.0)
     assert out["inputs"]["vol"] == {"value": 100.0, "from": "cli"}
     assert out["results"]["sell"]["entry"]["from"] == "schwab-mark"
 
