@@ -83,6 +83,41 @@ Sections 5 to 7 of the same script. Samples are 10 to 37 days, the windows overl
 
 Net read: volume tells you how violent a move is. At an extreme, high volume leans to a reversal (bounce after a sell-off, fade after a rally) and low volume leans to nothing.
 
+## 2026-10-26: typical daily and weekly moves, the volume study on both, and where IREN stands
+
+Run: `python3 scenarios/iren/analysis/timeframes.py`. A "big" move is one beyond 1 standard deviation of that timeframe, so it means the same on both. Low and high volume are the bottom and top third of that timeframe's RVOL (daily cuts 0.83x and 1.08x; weekly cuts 0.84x and 1.15x).
+
+| | Daily (252 bars) | Weekly (53 bars) |
+| --- | --- | --- |
+| Mean absolute move | 5.3% | 10.3% |
+| Median absolute move | 4.6% | 8.3% |
+| Standard deviation | 6.7% | 13.2% |
+| 90th percentile absolute move | 11.2% | 22.4% |
+| Biggest up / down | +30.5% / -17.4% | +34.0% / -25.7% |
+
+The weekly standard deviation is 2.0x the daily; a random walk gives 2.2x. That is slightly less than random, which hints at a little mean reversion inside a week. 53 weeks is too few to lean on it.
+
+**Daily, big moves (beyond 6.7%):**
+
+- Down on high volume, 20 days: +3.3% next day, +3.0% over 5 days, +5.1% over 10 (65% of cases up).
+- Up on high volume, 20 days: -0.4% next day, -3.0% over 5, -6.4% over 10 (30% up).
+- Low-volume big moves: 3 down days and 4 up days, too few to say anything.
+- Close at a 20-day low on high volume, 20 days: +4.0% over the next 10 (62% up). On low volume, 6 days: -10.5% (20% up). With the earlier 0.9x cut the low-volume case was +0.8% (10 days), so the low-volume side flips with the threshold and is noise.
+- Close at a 20-day high on high volume, 14 days: -5.6% over 10 (36% up).
+
+**Weekly, big moves (beyond 13.2%):** 1 to 4 weeks fall in each bucket, so nothing can be concluded. The weekly 8-week-low and 8-week-high rows (7 to 11 weeks, 1 to 4 per volume split) say the same.
+
+So the daily leans from the 3% study survive a volatility-scaled threshold (heavy-volume sell-off leans to a bounce, heavy-volume rally leans to a giveback), and the weekly timeframe cannot confirm or deny them.
+
+**Where IREN stands (2026-10-23 close, $24.91):**
+
+- Daily: at its 20-day low, 40% below its 20-day high. The day was -2.4% on 0.78x volume (low third). The day before was -8.4% on 1.36x (a big move on high volume), which is the case that leans to a bounce. Friday did not bounce.
+- Weekly: at its 8-week low, 47% below its 8-week high. The week was -7.7% on 1.31x volume (high third); the week before was -23.3% on 1.82x (1.8 std down on heavy volume), and the one before -15.7%.
+- Three weeks of heavy-volume selling put the weekly picture at an extreme, but the weekly buckets are too thin to say what follows.
+- The daily lean that applies, from Thursday's -8.4% on high volume, is +3.0% over 5 days and +5.1% over 10, with 58% to 65% of past cases up. The low-volume Friday at a new low pulls the other way, but that bucket has 6 cases.
+
+None of this reaches a LEAP's 15-month horizon: the leans cover 5 to 10 days from one year of one stock, and a sell-off like this one (-49% in 23 days) is the largest leg of the year.
+
 ## Open questions
 
 - **IREN IV history.** Schwab gives no historical option IV. Starting a daily snapshot of the Mark-implied IV (and realized vol) at a few expiries would let us measure IV against spot, which the rules in [`iv-rules.md`](iv-rules.md) currently assume.
