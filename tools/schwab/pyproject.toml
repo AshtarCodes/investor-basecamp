@@ -10,12 +10,16 @@ requires-python = ">=3.13"
 dependencies = [
     "bitwarden-sdk>=1.0.0",
     "httpx>=0.28.0",
+    "pricing-engine",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
 ]
+
+[tool.uv.sources]
+pricing-engine = { path = "../../packages/pricing-engine", editable = true }
 
 [project.scripts]
 schwab = "schwab_cli.cli:main"

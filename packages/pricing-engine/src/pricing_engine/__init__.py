@@ -1,3 +1,4 @@
+from pricing_engine.batch import BatchContract, Shock, price_contract
 from pricing_engine.dividends import DividendProjection, project_dividends
 from pricing_engine.european import parity_forward
 from pricing_engine.models import PriceRequest, PriceResult
@@ -12,10 +13,12 @@ from pricing_engine.treasury import (
 )
 
 __all__ = [
+    "BatchContract",
     "DividendProjection",
     "PriceRequest",
     "PriceResult",
     "RateQuote",
+    "Shock",
     "TreasuryCurves",
     "TreasuryError",
     "UnknownRootError",
@@ -23,6 +26,7 @@ __all__ = [
     "parity_forward",
     "parse_curve",
     "price",
+    "price_contract",
     "project_dividends",
     "settlement_instant",
 ]
