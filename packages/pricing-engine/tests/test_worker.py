@@ -11,9 +11,13 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 from support import bsm, priced, request, src, years
 from worker_client import Worker, batch_message, price_message
 
+import pricing_engine.worker as worker_module
+from pricing_engine.pool import Pool
+from pricing_engine.protocol import Failure
 from pricing_engine.worker import DEFAULT_WORKERS
 
 NUMERICS = {"time_steps": 50, "spot_steps": 100}  # the batch's default, for single-price twins
@@ -55,6 +59,15 @@ def test_a_malformed_line_is_an_invalid_json_error_with_no_id(worker):
     assert served_after(worker)
 
 
+def test_a_line_nested_too_deep_for_json_is_an_invalid_json_error_and_the_worker_serves_on(worker):
+    depth = 200_000  # the C scanner copes with 3,000 levels; 200,000 raises RecursionError
+    reply = worker.send_raw("[" * depth + "]" * depth)
+    assert reply["id"] is None
+    assert reply["ok"] is False
+    assert reply["error"]["code"] == "invalid_json"
+    assert served_after(worker)
+
+
 def test_json_that_is_not_an_object_is_an_invalid_request(worker):
     reply = worker.send_raw("[1, 2, 3]")
     assert (reply["id"], reply["error"]["code"]) == (None, "invalid_request")
@@ -82,6 +95,26 @@ def test_a_validation_failure_names_the_field_and_echoes_the_id(worker):
     assert reply["error"]["code"] == "invalid_request"
     assert "contract.strike" in reply["error"]["message"]
     assert served_after(worker)
+
+
+def test_a_validation_error_raised_by_the_engine_is_internal_not_the_callers_fault(
+    monkeypatch, capsys
+):
+    """A unit test of `handle`: no request makes `price()` raise a ValidationError, so the test
+    patches it, which a spawned process cannot do without a hook like the `NOISY` one."""
+
+    def broken(message):
+        raise ValidationError.from_exception_data("PriceResult", [])
+
+    monkeypatch.setattr(worker_module, "price", broken)
+    line = json.dumps(price_message("engine", request(sigma=0.3)))
+
+    reply = worker_module.handle(line, Pool(1))
+
+    assert isinstance(reply, Failure) and reply.id == "engine"
+    assert reply.error.code == "internal"
+    logged = capsys.readouterr().err
+    assert "ValidationError" in logged and "'engine'" in logged  # the log names the request
 
 
 def test_an_unsupported_root_is_a_model_error(worker):
@@ -203,14 +236,39 @@ def test_a_shock_equals_a_single_price_at_the_shocked_inputs_and_the_solved_iv(w
     assert "dividend_not_in_life" in single["result"]["flags"]
 
 
+def american_put_batch(shocks: list[dict[str, float]], **overrides):
+    fixture = {**AMERICAN_PUT, **overrides}
+    mark = priced(request(**fixture, sigma=0.34, numerics=NUMERICS))
+    return batch_message("flags", [(request(**fixture, sigma=None, mark=src(mark)), shocks)])
+
+
+def test_a_shock_that_passes_the_ex_date_is_flagged_dividend_not_in_life(worker):
+    reply = worker.send(american_put_batch([shock(days_forward=0), shock(days_forward=120)]))
+    contract = reply["result"]["contracts"][0]
+    assert contract["flags"] == []
+    assert contract["shock_flags"] == [{"shock": 1, "flags": ["dividend_not_in_life"]}]
+
+
+def test_a_flag_the_base_already_carries_is_not_repeated_on_its_shocks(worker):
+    spent = [{"ex_date": date(2026, 10, 1), "amount": 0.8, "from": "test fixture"}]
+    reply = worker.send(american_put_batch([shock(), shock(days_forward=120)], dividends=spent))
+    contract = reply["result"]["contracts"][0]
+    assert contract["flags"] == ["dividend_not_in_life"]
+    assert contract["shock_flags"] == []
+
+
+BELOW_INTRINSIC = dict(right="put", exercise="american", spot=90.0, strike=100.0)  # intrinsic 10
+
+
 def test_with_no_iv_every_shock_carries_the_residual_and_ignores_the_iv_shift(worker):
-    below = request(
-        right="put", exercise="american", spot=90.0, strike=100.0, sigma=None, mark=src(5.0)
-    )
+    below = request(**BELOW_INTRINSIC, sigma=None, mark=src(5.0))
     shocks = [shock(), shock(iv_shift=0.2), shock(spot_move=0.5)]
     reply = worker.send(batch_message("residual", [(below, shocks)]))
     contract = reply["result"]["contracts"][0]
     assert contract["iv"]["value"] is None
+    assert contract["iv"]["reason"] == "at_or_below_intrinsic"
+    at_lowest_sigma = priced(request(**{**BELOW_INTRINSIC, "sigma": 0.01, "numerics": NUMERICS}))
+    assert contract["iv"]["residual"] == pytest.approx(5.0 - at_lowest_sigma, abs=1e-9)
     assert "no_iv" in contract["flags"]
     at_base, shifted, rallied = contract["prices"]
     assert at_base == pytest.approx(5.0, abs=1e-6)  # the Mark, so a zero Shock is worth the Mark
@@ -323,21 +381,42 @@ def process_exists(pid: int) -> bool:
     return True
 
 
-def test_a_pool_process_that_dies_between_requests_fails_the_next_batch_and_the_pool_is_rebuilt():
+def wait_until_gone(pids: list[int], seconds: float) -> list[int]:
+    """The pids still alive after up to `seconds`."""
+    deadline = time.perf_counter() + seconds
+    alive = [pid for pid in pids if process_exists(pid)]
+    while alive and time.perf_counter() < deadline:
+        time.sleep(0.05)
+        alive = [pid for pid in alive if process_exists(pid)]
+    return alive
+
+
+def test_a_sigkilled_worker_takes_its_pool_processes_with_it():
+    spawned = Worker("--workers", "2")
+    pool = spawned.pool_pids()  # read before the kill: afterwards they are not its children
+    assert len(pool) == 2
+    try:
+        spawned.process.send_signal(signal.SIGKILL)
+        spawned.process.wait(timeout=10)
+        assert wait_until_gone(pool, seconds=2.0) == []
+    finally:
+        for pid in wait_until_gone(pool, seconds=0):
+            os.kill(pid, signal.SIGKILL)
+        spawned.cleanup()
+
+
+def test_a_pool_process_that_dies_between_requests_is_replaced_and_the_next_batch_prices():
     spawned = Worker("--workers", "2")
     try:
         batch = european_call_batch([shock(), shock(spot_move=0.01)])
         assert spawned.send(batch)["ok"] is True
         before = spawned.pool_pids()
         os.kill(before[0], signal.SIGKILL)
-        time.sleep(0.5)
+        time.sleep(0.5)  # the executor notices a death asynchronously; no contract has run yet
 
-        failed = spawned.send(batch)
-        assert failed["ok"] is False and failed["error"]["code"] == "internal"
-        assert failed["id"] == "grid"
+        reply = spawned.send(batch)
 
-        retried = spawned.send(batch)
-        assert retried["ok"] is True
+        assert reply["ok"] is True and reply["id"] == "grid"
         after = spawned.pool_pids()
         assert len(after) == 2 and not set(after) & set(before)
         assert spawned.send(price_message("single", request(sigma=0.3)))["ok"] is True
@@ -387,6 +466,34 @@ def test_a_shock_that_is_not_a_finite_number_is_an_invalid_request(worker, field
     reply = worker.send(european_call_batch([shock(**{field: bad})]))
     assert reply["error"]["code"] == "invalid_request"
     assert field in reply["error"]["message"]
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), -float("inf")])
+@pytest.mark.parametrize(
+    "path, field",
+    [
+        (("spot", "value"), "spot.value"),
+        (("volatility", "value"), "volatility.value"),
+        (("rate", "value"), "rate.value"),
+    ],
+)
+def test_a_price_input_that_is_not_a_finite_number_is_an_invalid_request(worker, path, field, bad):
+    message = price_message("nan", request(sigma=0.3))
+    message[path[0]][path[1]] = bad  # set after building: the model no longer holds a NaN
+    reply = worker.send(message)
+    assert reply["ok"] is False and reply["id"] == "nan"
+    assert reply["error"]["code"] == "invalid_request"
+    assert field in reply["error"]["message"]
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf")])
+def test_a_mark_that_is_not_a_finite_number_is_an_invalid_request_in_a_batch(worker, bad):
+    message = european_call_batch([shock()])
+    message["contracts"][0]["request"]["mark"]["value"] = bad
+    reply = worker.send(message)
+    assert reply["ok"] is False and reply["id"] == "grid"
+    assert reply["error"]["code"] == "invalid_request"
+    assert "contracts.0.request.mark.value" in reply["error"]["message"]
 
 
 def test_a_shock_beyond_a_hundred_years_forward_is_an_invalid_request(worker):

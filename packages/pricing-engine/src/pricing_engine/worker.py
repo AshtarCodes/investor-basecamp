@@ -21,9 +21,8 @@ from typing import TextIO
 
 from pydantic import TypeAdapter, ValidationError
 
-from pricing_engine.batch import price_contract_safely
-from pricing_engine.errors import ErrorCode, WorkerError, error_of
-from pricing_engine.pool import Pool, warm_up
+from pricing_engine.errors import ErrorCode, WorkerError
+from pricing_engine.pool import Pool, price_contract_safely, report, warm_up
 from pricing_engine.pricer import price
 from pricing_engine.protocol import (
     REQUEST_TYPES,
@@ -91,7 +90,7 @@ def handle(line: str, pool: Pool) -> Response:
     """The response to one request line. Never raises: every failure is a `Failure`."""
     try:
         raw = json.loads(line)
-    except ValueError as error:
+    except (ValueError, RecursionError) as error:  # RecursionError: a line nested far too deep
         return fail(None, "invalid_json", str(error))
     if not isinstance(raw, dict):
         return fail(None, "invalid_request", "a request is a JSON object")
@@ -105,11 +104,12 @@ def handle(line: str, pool: Pool) -> Response:
         return fail(request_id, "unknown_type", f"unknown request type {kind!r}")
     try:
         message = REQUEST_TYPES[kind].model_validate(raw)
+    except ValidationError as error:
+        return fail(request_id, "invalid_request", describe(error))
+    try:
         if isinstance(message, PriceMessage):
             return Success(id=message.id, result=price(message))
         return Success(id=message.id, result=run_batch(message, pool))
-    except ValidationError as error:
-        return fail(request_id, "invalid_request", describe(error))
     except BrokenProcessPool as error:
         # A pool process died (a QuantLib crash, an OOM kill). Replace the pool and report this
         # request as failed; the caller retries once. Retrying here would repeat a crash.
@@ -120,7 +120,7 @@ def handle(line: str, pool: Pool) -> Response:
             traceback.print_exc()  # the next batch starts the pool again
         return fail(request_id, "internal", f"the pricing pool died: {error}")
     except Exception as error:
-        return Failure(id=request_id, error=error_of(error))
+        return Failure(id=request_id, error=report(error, f"request {request_id!r}"))
 
 
 def write(out: TextIO, response: Response) -> None:

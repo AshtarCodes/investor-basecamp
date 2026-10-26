@@ -11,7 +11,7 @@ from typing import Literal, Self
 
 from pydantic import Field, model_validator
 
-from pricing_engine.errors import WorkerError, error_of
+from pricing_engine.errors import WorkerError
 from pricing_engine.iv import SIGMA_MIN
 from pricing_engine.models import (
     Flag,
@@ -40,8 +40,8 @@ class Shock(Model):
     `proportional` mode. `days_forward` is calendar days.
     """
 
-    spot_move: float = Field(gt=-1, allow_inf_nan=False)
-    iv_shift: float = Field(allow_inf_nan=False)
+    spot_move: float = Field(gt=-1)
+    iv_shift: float
     days_forward: float = Field(ge=0, le=MAX_DAYS_FORWARD)
 
 
@@ -68,7 +68,8 @@ class ShockFlags(Model):
 
 
 class PricedContract(Model):
-    """`prices[i]` is the per-share price under `shocks[i]`; `shock_flags` lists only flagged ones.
+    """`prices[i]` is the per-share price under `shocks[i]`; `shock_flags` lists only the Shocks
+    whose price carries a flag the base's `flags` do not (`expired`, `dividend_not_in_life`).
 
     `iv` is the Mark-implied IV. With none (`iv.value` is null), every Shock keeps the model's value
     at the lowest σ plus the residual, ignores the IV Shift, and `flags` includes `no_iv`.
@@ -127,16 +128,7 @@ def price_contract(
         if base.iv.residual is not None and not expired:
             amount = max(amount + base.iv.residual, 0.0)
         prices.append(amount)
-        if expired:
-            shock_flags.append(ShockFlags(shock=index, flags=["expired"]))
+        added = [flag for flag in result.flags if flag not in base.flags]
+        if added:
+            shock_flags.append(ShockFlags(shock=index, flags=added))
     return PricedContract(iv=base.iv, flags=base.flags, prices=prices, shock_flags=shock_flags)
-
-
-def price_contract_safely(
-    contract: BatchContract, mode: IvShiftMode, numerics: Numerics
-) -> PricedContract | FailedContract:
-    """`price_contract`, with a contract that fails reported as an error so the batch survives."""
-    try:
-        return price_contract(contract, mode, numerics)
-    except Exception as error:
-        return FailedContract(error=error_of(error))

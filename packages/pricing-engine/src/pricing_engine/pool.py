@@ -2,14 +2,28 @@
 
 import multiprocessing
 import os
+import sys
+import threading
+import traceback
 from collections.abc import Callable, Sequence
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import Future, ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from datetime import UTC, date, datetime
+from multiprocessing.connection import wait
 from multiprocessing.synchronize import Barrier
 from typing import Any
 
-from pricing_engine.batch import SHOCK_NUMERICS, BatchContract, Shock, price_contract
-from pricing_engine.models import PriceRequest
+from pricing_engine.batch import (
+    SHOCK_NUMERICS,
+    BatchContract,
+    FailedContract,
+    IvShiftMode,
+    PricedContract,
+    Shock,
+    price_contract,
+)
+from pricing_engine.errors import WorkerError, error_of
+from pricing_engine.models import Numerics, PriceRequest
 
 START_TIMEOUT_SECONDS = 60.0
 
@@ -35,8 +49,38 @@ def warm_up() -> None:
     price_contract(BatchContract(request=request, shocks=[shock]), "absolute", SHOCK_NUMERICS)
 
 
+def report(error: Exception, context: str) -> WorkerError:
+    """`error_of`, and an `internal` one also gets a traceback on stderr, naming what failed."""
+    failure = error_of(error)
+    if failure.code == "internal":
+        print(f"internal error in {context}", file=sys.stderr)
+        traceback.print_exception(error)
+    return failure
+
+
+def price_contract_safely(
+    contract: BatchContract, mode: IvShiftMode, numerics: Numerics
+) -> PricedContract | FailedContract:
+    """`price_contract`, with a contract that fails reported as an error so the batch survives."""
+    try:
+        return price_contract(contract, mode, numerics)
+    except Exception as error:
+        details = contract.request.contract
+        context = f"contract {details.root} {details.expiry} {details.strike} {details.right}"
+        return FailedContract(error=report(error, context))
+
+
+def exit_with_parent() -> None:
+    """Exit when the worker does, however it died, so a SIGKILLed worker leaves no pool behind."""
+    parent = multiprocessing.parent_process()
+    assert parent is not None
+    wait([parent.sentinel])
+    os._exit(1)
+
+
 def init_pool_process(barrier: Barrier) -> None:
     """Runs once in each pool process. The barrier holds every process here until all N exist."""
+    threading.Thread(target=exit_with_parent, daemon=True).start()
     warm_up()
     barrier.wait(START_TIMEOUT_SECONDS)
 
@@ -76,12 +120,25 @@ class Pool:
     def map[T](self, function: Callable[..., T], jobs: Sequence[tuple[Any, ...]]) -> list[T]:
         """Run `function(*job)` for each job, one job per task, in order.
 
-        Starts the pool first if an earlier rebuild failed and left it stopped.
+        Starts the pool first if an earlier rebuild failed and left it stopped. A pool process that
+        died between requests breaks the executor, and the first `submit` says so before any task of
+        this request has run. That cannot be this request's fault, so the pool is rebuilt and the
+        jobs submitted once more. A break after a task was submitted is raised as it is: that task
+        may be the cause, and the caller's retry rule covers it.
         """
         if self.executor is None:
             self.start()
         assert self.executor is not None
-        futures = [self.executor.submit(function, *job) for job in jobs]
+        futures: list[Future[T]] = []
+        try:
+            for job in jobs:
+                futures.append(self.executor.submit(function, *job))
+        except BrokenProcessPool:
+            if futures:
+                raise
+            self.rebuild()
+            assert self.executor is not None
+            futures = [self.executor.submit(function, *job) for job in jobs]
         return [future.result() for future in futures]
 
     def stop(self) -> None:

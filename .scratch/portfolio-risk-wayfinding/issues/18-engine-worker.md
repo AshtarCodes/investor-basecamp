@@ -24,7 +24,7 @@ Add the long-lived process the server spawns so QuantLib is imported once, not p
 - Round trip of a single price through a spawned subprocess, measured and recorded in the package `AGENTS.md`; the first request after the ready line is under 50 ms for a 100 by 200 grid price.
 - A 50-Position by 100-Shock batch completes in under 1 s on this laptop through the worker, including the pool.
 - A malformed line, an unknown request type, a validation failure and an unsupported root (NDX) each return a structured error and leave the worker serving the next line. A Mark at or below intrinsic is not an error: it returns `price: null`, `iv.reason` and the residual, in a single price and in a batch.
-- stdin close and SIGTERM both end the process with exit code 0 within a second.
+- stdin close and SIGTERM both end the process with exit code 0 within a second from the moment the handler is installed. A SIGTERM during the first ~0.2 s, while QuantLib imports, exits -15 and leaks nothing, because no pool exists yet (amended by [19](19-engine-worker-review-fixes.md)).
 - Tests spawn the real worker as a subprocess; no test needs the network.
 
 ## Out of scope
@@ -82,7 +82,53 @@ Choices the grilling left open:
 - **Batch shape:** each contract is `{"request", "shocks"}`, because the caller beta-weights the spot move per Underlying. A batch-level `numerics` (default 50 by 100) replaces each request's own. A batch request must carry a Mark and no `greeks` or `cross_check`.
 - **Units:** `spot_move` is a fraction of spot (greater than -1, finite), `iv_shift` is a finite decimal (0.02 is 2 vol points) or a fraction of the IV in proportional mode, and `days_forward` is calendar days (0 to 36,500, fractions allowed). A request id is a string or an integer, never coerced from a boolean or a float. An explicit forward moves with spot.
 - **Residual carry:** with no IV, a Shock's price is the model value at the 1 vol point floor plus the residual, so a zero Shock is worth the Mark. The IV Shift is ignored, the price is never below zero, and a Shock past expiry is plain intrinsic with no residual.
-- **Result shape:** `prices` is dense, `shock_flags` lists only the flagged Shocks (`expired`), and `flags` carries the base price's flags such as `no_iv`.
+- **Result shape:** `prices` is dense, `shock_flags` lists the Shocks whose price carries a flag the base's `flags` do not (`expired`, `dividend_not_in_life`; amended by [19](19-engine-worker-review-fixes.md)), and `flags` carries the base price's flags such as `no_iv`.
 - **Pool start:** a barrier in each process's initializer forces all N processes to start before the ready line, since the executor starts them on demand.
 - **Timings include the wire:** each batch time runs from writing the request line to reading the response line.
 - **Left to the server ticket:** a worker whose parent dies without closing stdin is not detected here; the server owns the child's lifetime.
+
+## Comments
+
+**Review, 2026-10-25** (`e74369c...2f0c9f9`). The fixes are planned in [19](19-engine-worker-review-fixes.md).
+
+The review had two parts:
+- A standards review and a spec review of the diff.
+- The real worker run end to end through `uv run --project packages/pricing-engine pricing-worker`, as the server will spawn it.
+
+**Holds up.** All 160 tests pass, and Ruff, ty and the schema staleness test are clean. `bench/worker.py` reproduces the recorded figures:
+
+| Pool size | Ready line | First price (100 by 200) | 50 by 100 batch | Resident memory |
+| --- | --- | --- | --- | --- |
+| 4 | 0.57 s | 10.7 ms | 0.21 s | 585 MB |
+| 2 | 0.55 s | 10.7 ms | 0.41 s | 362 MB |
+
+Every envelope case answers as specified, and the worker serves the next line after each:
+- a malformed line, and JSON that is not an object;
+- an unknown type, including a numeric `type`;
+- a boolean id, a validation failure and NDX;
+- invalid UTF-8.
+
+Three lines written in one go are answered in order. On the batch side:
+- A zero Shock reproduces the Mark on an American put to 5e-15.
+- A Mark below intrinsic returns `at_or_below_intrinsic` with the residual. Its zero Shock is worth the Mark, and a Shock past expiry is plain intrinsic.
+- A Shock 2.4 minutes before the Settlement instant is not flagged. One at or after it is `expired`.
+- A proportional shift of -500% floors at 1 vol point.
+- An empty batch and a contract with no Shocks both answer.
+
+On shutdown, closing stdin exits 0 in 0.07 s, and the pool is rebuilt after a kill both while idle and mid-batch.
+
+**Found:**
+- **Pool processes outlive a SIGKILLed worker.** All 4 pool processes and the resource tracker, about 466 MB, were still alive 10 s later, re-parented to pid 1.
+- **A NaN or infinite spot, σ or rate is not rejected.** It returns `ok: true` with `price: null` and no flag. A NaN Mark returns `internal`.
+- **Deep nesting kills the worker.** A 200,000-deep JSON array raises `RecursionError`, which `handle` does not catch, so the worker exits.
+- **SIGTERM in the first 0.2 s exits -15.** The handler is installed only after the QuantLib import.
+- **The spec reviewer found three more gaps:**
+  - A `ValidationError` raised inside pricing would be reported as `invalid_request`.
+  - The batch test for a Mark below intrinsic asserts neither `iv.reason` nor `iv.residual`.
+  - A pool process that dies while idle fails the next batch, although no contract of that batch was in flight.
+- **The standards reviewer found one rule breach.** `errors.py` prints tracebacks, but the package `AGENTS.md` allows I/O only in `treasury.py`, `worker.py` and `pool.py`.
+- **A Shock past an ex-date loses its flag.** Its `dividend_not_in_life` is dropped from `shock_flags`.
+
+**Accepted as is:**
+- One invalid contract fails the whole batch, since it is a caller bug.
+- Ctrl-C by hand exits 130 with a traceback.

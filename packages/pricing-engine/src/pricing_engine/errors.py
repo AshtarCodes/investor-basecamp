@@ -1,6 +1,5 @@
 """The structured error the worker returns instead of dying."""
 
-import traceback
 from typing import Literal
 
 from pricing_engine.models import Model
@@ -15,8 +14,7 @@ class WorkerError(Model):
 
 
 def error_of(error: Exception) -> WorkerError:
-    """The structured error for an exception raised while pricing; unexpected ones are logged."""
+    """The structured error for an exception raised while pricing. Pure: the caller logs."""
     if isinstance(error, UnknownRootError):
         return WorkerError(code="model_error", message=str(error))
-    traceback.print_exception(error)
     return WorkerError(code="internal", message=f"{type(error).__name__}: {error}")

@@ -320,7 +320,7 @@
     },
     "PricedContract": {
       "additionalProperties": false,
-      "description": "`prices[i]` is the per-share price under `shocks[i]`; `shock_flags` lists only flagged ones.\n\n`iv` is the Mark-implied IV. With none (`iv.value` is null), every Shock keeps the model's value\nat the lowest \u03c3 plus the residual, ignores the IV Shift, and `flags` includes `no_iv`.",
+      "description": "`prices[i]` is the per-share price under `shocks[i]`; `shock_flags` lists only the Shocks\nwhose price carries a flag the base's `flags` do not (`expired`, `dividend_not_in_life`).\n\n`iv` is the Mark-implied IV. With none (`iv.value` is null), every Shock keeps the model's value\nat the lowest \u03c3 plus the residual, ignores the IV Shift, and `flags` includes `no_iv`.",
       "properties": {
         "flags": {
           "items": {
