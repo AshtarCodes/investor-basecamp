@@ -6,6 +6,7 @@ Per-stock baselines and assumptions for what-if runs of `pnpm schwab option pric
 | --- | --- |
 | `<TICKER>/observations.md` | Dated facts measured from data: price regimes, volatility, how the stock behaves against the VIX, what the tool showed. Append new dated sections; do not rewrite history. |
 | `<TICKER>/iv-rules.md` | The proposed implied-volatility rules for scenarios, versioned. Rules change as evidence arrives; each rule says what it rests on and what would change it. |
+| `<TICKER>/thesis.md` | The owner's own bear/base/bull valuation view, versioned and reviewed quarterly. A view, not measured data; future discussions of the stock start from it. |
 | `<TICKER>/data/` | The raw series the observations come from, so a number can be checked. |
 | `<TICKER>/analysis/` | Scripts that regenerate the observations from `data/` (standard library only). |
 

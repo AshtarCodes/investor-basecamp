@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as PrototypePortfolioRouteImport } from './routes/prototype/portfolio'
+import { Route as PrototypeRoundtripRouteImport } from './routes/prototype/roundtrip'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const PrototypePortfolioRoute = PrototypePortfolioRouteImport.update({
   path: '/prototype/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrototypeRoundtripRoute = PrototypeRoundtripRouteImport.update({
+  id: '/prototype/roundtrip',
+  path: '/prototype/roundtrip',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/prototype/portfolio': typeof PrototypePortfolioRoute
+  '/prototype/roundtrip': typeof PrototypeRoundtripRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/prototype/portfolio': typeof PrototypePortfolioRoute
+  '/prototype/roundtrip': typeof PrototypeRoundtripRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,38 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/prototype/portfolio': typeof PrototypePortfolioRoute
+  '/prototype/roundtrip': typeof PrototypeRoundtripRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign-in' | '/prototype/portfolio' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/sign-in'
+    | '/prototype/portfolio'
+    | '/prototype/roundtrip'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-in' | '/prototype/portfolio' | '/api/auth/$'
-  id: '__root__' | '/' | '/sign-in' | '/prototype/portfolio' | '/api/auth/$'
+  to:
+    | '/'
+    | '/sign-in'
+    | '/prototype/portfolio'
+    | '/prototype/roundtrip'
+    | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/sign-in'
+    | '/prototype/portfolio'
+    | '/prototype/roundtrip'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SignInRoute: typeof SignInRoute
   PrototypePortfolioRoute: typeof PrototypePortfolioRoute
+  PrototypeRoundtripRoute: typeof PrototypeRoundtripRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -92,6 +118,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrototypePortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/prototype/roundtrip': {
+      id: '/prototype/roundtrip'
+      path: '/prototype/roundtrip'
+      fullPath: '/prototype/roundtrip'
+      preLoaderRoute: typeof PrototypeRoundtripRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -106,6 +139,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SignInRoute: SignInRoute,
   PrototypePortfolioRoute: PrototypePortfolioRoute,
+  PrototypeRoundtripRoute: PrototypeRoundtripRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

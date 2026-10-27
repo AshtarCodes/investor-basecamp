@@ -1,6 +1,6 @@
 # IREN observations
 
-Recorded 2026-10-26. Newest sections go at the bottom.
+Recorded 2026-10-26. Newest sections go at the bottom. The owner's bear/base/bull valuation view is not an observation; it lives in [thesis.md](thesis.md).
 
 ## 2026-10-26: one year of IREN against the VIX
 
@@ -172,6 +172,16 @@ Data: `pnpm schwab get` for IREN and `$VIX` daily candles, saved as [`daily-ohlc
 - The 2026 drawdown has no VIX shock behind it (idiosyncratic), so the VIX cannot mark its bottom the way it did in 2025.
 
 **Effect on the rules:** [Rule 4](iv-rules.md#rule-4-the-spot-range-to-test) (spot range -50% to +100%) rests on the 2026 year alone. The 2025 year had +61% in 7 days, +220% in 60 days off the trough and +1212% in 130 days, so +100% is not an upper bound for IREN. The IV rules are unchanged; there is still no IV history.
+
+## 2026-10-26: what the two years add to the rules
+
+Follows the section on the year before. Rule 4's top is now +200% ([iv-rules 0.2](iv-rules.md)); the rest is what the second year confirmed or left open.
+
+- **Realized volatility agrees across regimes.** 2025 year: 102% full period, 98% last 60 days, 102% last 30 and 10 days. 2026 year: 106% full, 82% last 60, 73% last 30. The level of volatility (about 100%) held through a +497% year and a -55% year, so Rule 2's 60% floor and 130% cap hold for both. The direction and the volume lean do not carry over (see the section above); the size of the moves does.
+- **Move size is the stable thing.** Daily mean absolute move 5.0% and 5.3%, weekly 11.4% and 10.3%. A scenario can lean on "IREN moves about 5% a day and 10% to 11% a week" in either regime; it cannot lean on which way.
+- **Spot range, both ends.** Up: +61% in 7 days, +220% in 60 days, +1212% in 130 days (2025). Down: -57% in 43 days (2026), -59.5% in 37 days (2025). Neither year's extremes were a ceiling, so Rule 4's -50% and +200% are test points, not bounds.
+- **A drawdown at day 23 does not say where it ends.** April 2025 was -45% at day 23 and fell 26% more; the current one is -49% at day 23. The 2025 fall ended on a macro shock (VIX 52); the 2026 one has no such marker, so nothing here says where it stops.
+- **The one volume lean that held across years** is the day-after bounce on a heavy-volume sell-off (+5.1% and +3.3% the next day). Nothing else about volume survived the regime change, so volume stays out of the rules.
 
 ## Open questions
 

@@ -33,11 +33,27 @@ The stock, ETF, or index that a Position's value depends on. An equity Position'
 **Leg**:
 One option Position considered as part of a multi-option structure on the same Underlying.
 
+**Sleeve**:
+A group of identical contracts bought together: a number of one call, or a number of one spread, which is two Legs. Shares and cash are not Sleeves.
+_Avoid_: Leg (for a whole spread), line, position group
+
+**Build**:
+A set of Sleeves plus shares bought with a starting budget, compared on Price Paths. Whatever the Sleeves don't use goes into shares.
+_Avoid_: Construction, mix, portfolio
+
 **Hypothetical Trade**:
 A Position you don't actually hold. It exists only inside a Simulated Portfolio.
 _Avoid_: What-if position, overlay
 
 ## Risk
+
+**Price Path**:
+A named, assumed course for the Underlying's price: a series of dated prices, each with an Action. It has a weight that sets how much it counts toward an expected result.
+_Avoid_: Scenario (that is the SPY-by-IV grid), path
+
+**Action**:
+What happens to the options on a Price Path's date: hold, sell a percent and keep the money as cash, or sell a percent and put the money into shares.
+_Avoid_: Trade, rule, policy
 
 **Scenario**:
 A named set of modeled futures for one Portfolio, which owns it: a grid of SPY moves by IV shifts, plus a number of days forward.
@@ -79,6 +95,10 @@ _Avoid_: Margin percentage, equity percentage, buying power
 **Mark**:
 Schwab's quoted current price for an option contract, per share: the midpoint of its bid and ask.
 _Avoid_: Theoretical value, last price
+
+**Quote Set**:
+The Marks, bids, asks and Underlying price for a group of option contracts, all taken at one moment, named by when it was taken. Values compared side by side come from one Quote Set.
+_Avoid_: Snapshot (that is an Account's holdings), chain dump
 
 **Mark-implied IV**:
 The volatility at which our model reproduces a contract's Mark. Every Position's base value starts from it, so a Shock of zero reproduces market value.

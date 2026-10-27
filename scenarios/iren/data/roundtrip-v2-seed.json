@@ -1,0 +1,1681 @@
+{
+ "builds": [
+  {
+   "key": "28-R60-B20-S20_R3_B2",
+   "name": "R60/B20/S20 R3 B2 \u00b7 Jan 2029",
+   "description": "Return-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 6,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R40-B30-S30_R2_B2",
+   "name": "R40/B30/S30 R2 B2 \u00b7 Jan 2029",
+   "description": "Balanced. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R30-B52-S18_R3_B1",
+   "name": "R30/B52/S18 R3 B1 \u00b7 Jan 2029",
+   "description": "Barbell-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 6,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R20-B20-S60_R1_B2",
+   "name": "R20/B20/S60 R1 B2 \u00b7 Jan 2029",
+   "description": "Stock-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R30-B52-S18_R3_B4",
+   "name": "R30/B52/S18 R3 B4 \u00b7 Jan 2029",
+   "description": "Barbell-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 30,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R30-B52-S18_R3_B5",
+   "name": "R30/B52/S18 R3 B5 \u00b7 Jan 2029",
+   "description": "Barbell-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 8,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 35,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R30-B52-S18_R3_B6",
+   "name": "R30/B52/S18 R3 B6 \u00b7 Jan 2029",
+   "description": "Barbell-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 10,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R40-B30-S30_R2_B4",
+   "name": "R40/B30/S30 R2 B4 \u00b7 Jan 2029",
+   "description": "Balanced. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 4,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 30,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R40-B30-S30_R2_B5",
+   "name": "R40/B30/S30 R2 B5 \u00b7 Jan 2029",
+   "description": "Balanced. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 4,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 35,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R40-B30-S30_R2_B6",
+   "name": "R40/B30/S30 R2 B6 \u00b7 Jan 2029",
+   "description": "Balanced. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 6,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R60-B30-S10_R3_B2",
+   "name": "R60/B30/S10 R3 B2 \u00b7 Jan 2029",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 6,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R60-B20-S20_R4_B2",
+   "name": "R60/B20/S20 R4 B2 \u00b7 Jan 2029",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 5,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R60-B30-S10_R4_B2",
+   "name": "R60/B30/S10 R4 B2 \u00b7 Jan 2029",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 5,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R60-B10-S30_R3_B1",
+   "name": "R60/B10/S30 R3 B1 \u00b7 Jan 2029",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 5,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R60-B20-S20_R3_B4",
+   "name": "R60/B20/S20 R3 B4 \u00b7 Jan 2029",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 5,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 30,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "28-R50-B25-S25_R3_B2",
+   "name": "R50/B25/S25 R3 B2 \u00b7 Jan 2029",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 5,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 90,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2029-01-19",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2029-01-19",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "all-shares",
+   "name": "All shares",
+   "description": "Baseline: the whole budget in shares.",
+   "budget": 10000,
+   "sleeves": []
+  },
+  {
+   "key": "27-R60-B30-S10_R4_B2",
+   "name": "R60/B30/S10 R4 B2 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R30-B17-S52_R4_B2",
+   "name": "R30/B17/S52 R4 B2 \u00b7 Jan 2028",
+   "description": "Stock-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 3,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R20-B20-S60_R4_B1",
+   "name": "R20/B20/S60 R4 B1 \u00b7 Jan 2028",
+   "description": "Stock-heavy. v1 stored build. Discussed in roundtrip-results.md.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R60-B30-S10_R4_B3",
+   "name": "R60/B30/S10 R4 B3 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 140,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R60-B20-S20_R4_B2",
+   "name": "R60/B20/S20 R4 B2 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R60-B10-S30_R4_B2",
+   "name": "R60/B10/S30 R4 B2 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R60-B20-S20_R4_B3",
+   "name": "R60/B20/S20 R4 B3 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 140,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R50-B25-S25_R4_B2",
+   "name": "R50/B25/S25 R4 B2 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 6,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R60-B20-S20_R4_B1",
+   "name": "R60/B20/S20 R4 B1 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R60-B10-S30_R4_B1",
+   "name": "R60/B10/S30 R4 B1 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 7,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R50-B25-S25_R4_B1",
+   "name": "R50/B25/S25 R4 B1 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 6,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 2,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "27-R50-B12-S38_R4_B1",
+   "name": "R50/B12/S38 R4 B1 \u00b7 Jan 2028",
+   "description": "Return-heavy. v1 stored build.",
+   "budget": 10000,
+   "sleeves": [
+    {
+     "contracts": 6,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 40,
+       "kind": "C",
+       "side": 1
+      }
+     ]
+    },
+    {
+     "contracts": 1,
+     "legs": [
+      {
+       "expiry": "2028-01-21",
+       "strike": 25,
+       "kind": "C",
+       "side": 1
+      },
+      {
+       "expiry": "2028-01-21",
+       "strike": 75,
+       "kind": "C",
+       "side": -1
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "paths": [
+  {
+   "key": "SM",
+   "name": "Base",
+   "description": "Straight to the base case ($103, then $164). v1 stored path: holds until 2028, sells half the options in Jun 2028 and the rest in Nov 2028.",
+   "weight": 45,
+   "points": [
+    {
+     "date": "2027-12-31",
+     "price": 103,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 129.97,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 158.03,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 164,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "SU",
+   "name": "Bull",
+   "description": "Straight to the bull case ($230, then $343). v1 stored path: holds until 2028, sells half the options in Jun 2028 and the rest in Nov 2028.",
+   "weight": 20,
+   "points": [
+    {
+     "date": "2027-12-31",
+     "price": 230,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 280.87,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 332.25,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 343,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "SB",
+   "name": "Bear",
+   "description": "Straight to the bear case ($32, then $46). v1 stored path: holds until 2028, sells half the options in Jun 2028 and the rest in Nov 2028.",
+   "weight": 7,
+   "points": [
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT85J",
+   "name": "$85 Jun 2027, then down",
+   "description": "Up to $85 in June 2027, then down. v1 stored path: holds until 2028, sells half the options in Jun 2028 and the rest in Nov 2028.",
+   "weight": 7,
+   "points": [
+    {
+     "date": "2027-06-30",
+     "price": 85,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT85J-half",
+   "name": "$85 Jun 2027, then down \u00b7 sell half at $85",
+   "weight": 0,
+   "description": "Up to $85 in June 2027, then down, selling half the options when IREN first reaches $85 (Jun 30, 2027).",
+   "points": [
+    {
+     "date": "2027-06-30",
+     "price": 85.0,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT85N",
+   "name": "$85 Nov 2027, then down",
+   "description": "Up to $85 in November 2027, then down (stress). v1 stored path: holds until 2028, sells half the options in Jun 2028 and the rest in Nov 2028.",
+   "weight": 7,
+   "points": [
+    {
+     "date": "2027-11-30",
+     "price": 85,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT85N-half",
+   "name": "$85 Nov 2027, then down \u00b7 sell half at $85",
+   "weight": 0,
+   "description": "Up to $85 in November 2027, then down (stress), selling half the options when IREN first reaches $85 (Nov 30, 2027).",
+   "points": [
+    {
+     "date": "2027-11-30",
+     "price": 85.0,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT103J",
+   "name": "$103 Jun 2027, then down",
+   "description": "Up to $103 in June 2027, then down. v1 stored path: holds until 2028, sells half the options in Jun 2028 and the rest in Nov 2028.",
+   "weight": 7,
+   "points": [
+    {
+     "date": "2027-06-30",
+     "price": 103,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT103J-half",
+   "name": "$103 Jun 2027, then down \u00b7 sell half at $85",
+   "weight": 0,
+   "description": "Up to $103 in June 2027, then down, selling half the options when IREN first reaches $85 (May 27, 2027).",
+   "points": [
+    {
+     "date": "2027-05-27",
+     "price": 85.08,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2027-06-30",
+     "price": 103,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT103N",
+   "name": "$103 Nov 2027, then down",
+   "description": "Up to $103 in November 2027, then down (stress). v1 stored path: holds until 2028, sells half the options in Jun 2028 and the rest in Nov 2028.",
+   "weight": 7,
+   "points": [
+    {
+     "date": "2027-11-30",
+     "price": 103,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  },
+  {
+   "key": "RT103N-half",
+   "name": "$103 Nov 2027, then down \u00b7 sell half at $85",
+   "weight": 0,
+   "description": "Up to $103 in November 2027, then down (stress), selling half the options when IREN first reaches $85 (Oct 06, 2027).",
+   "points": [
+    {
+     "date": "2027-10-06",
+     "price": 85.1,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2027-11-30",
+     "price": 103,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2027-12-31",
+     "price": 32,
+     "action": "hold",
+     "sellPct": null
+    },
+    {
+     "date": "2028-06-30",
+     "price": 38.37,
+     "action": "sell_cash",
+     "sellPct": 50
+    },
+    {
+     "date": "2028-11-30",
+     "price": 44.69,
+     "action": "sell_cash",
+     "sellPct": 100
+    },
+    {
+     "date": "2028-12-29",
+     "price": 46,
+     "action": "hold",
+     "sellPct": null
+    }
+   ]
+  }
+ ]
+}

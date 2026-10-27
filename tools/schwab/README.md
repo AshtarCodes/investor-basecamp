@@ -27,11 +27,16 @@ pnpm schwab get /trader/v1/accounts/accountNumbers
 pnpm schwab capture --option '<OCC>' --equity AAPL
 pnpm schwab macro dxy
 pnpm schwab option price --symbol 'IREN  270115C00055000'
+pnpm schwab option chain --symbol IREN --from 2027-06-01
 ```
 
 Captures are written under `.local/schwab/captures/` (gitignored). Schwab OAuth tokens live in Keychain (`investor-basecamp` / `schwab`).
 
 **Macro:** `macro dxy` computes ICE USDX from six Schwab **`BASE/QUOTE`** FX quotes (`method: ice-formula`, `source: schwab-fx`). Schwab does not serve **`$DXY`** or FX **price history** for backfill — see [docs/schwab/external-market-data.md](../../docs/schwab/external-market-data.md) and [observations.md](../../docs/schwab/observations.md).
+
+## Option chain
+
+`pnpm schwab option chain --symbol IREN [--from YYYY-MM-DD] [--contract-type CALL|PUT|ALL]` prints every listed contract's bid, ask, Mark, delta, Schwab IV and quote time, the Underlying's spot, and the Treasury rate for each expiry (percent; Schwab's chain `interestRate` as a flagged fallback), as one Quote Set. One read-only GET on the chains endpoint; nothing is priced. The `/prototype/roundtrip` page takes its Quote Set this way.
 
 ## Option pricing
 

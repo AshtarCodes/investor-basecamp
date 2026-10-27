@@ -58,6 +58,12 @@ def _build_parser() -> argparse.ArgumentParser:
     option_parser = sub.add_parser("option", help="Option pricing with our own model.")
     option_sub = option_parser.add_subparsers(dest="option_command", required=True)
     _add_option_price_parser(option_sub)
+    chain = option_sub.add_parser(
+        "chain", help="Every listed contract's quote and rate, as one Quote Set (read-only)."
+    )
+    chain.add_argument("--symbol", required=True, help="Underlying, e.g. IREN.")
+    chain.add_argument("--from", dest="from_date", help="First expiry date (YYYY-MM-DD).")
+    chain.add_argument("--contract-type", choices=["CALL", "PUT", "ALL"], default="CALL")
 
     return parser
 
@@ -161,6 +167,18 @@ def main(argv: list[str] | None = None) -> None:
         if args.command == "option":
             if args.option_command == "price":
                 _run_option_price(args)
+                return
+            if args.option_command == "chain":
+                from schwab_cli.option_chain import run_option_chain
+
+                output = run_option_chain(
+                    args.symbol,
+                    now=datetime.now(UTC),
+                    from_date=args.from_date,
+                    contract_type=args.contract_type,
+                )
+                json.dump(output, sys.stdout, indent=1)
+                sys.stdout.write("\n")
                 return
             msg = f"Unknown option command {args.option_command!r}"
             raise RuntimeError(msg)

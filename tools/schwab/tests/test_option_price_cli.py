@@ -42,3 +42,10 @@ def test_login_and_get_do_not_load_quantlib():
         "sys.exit(1 if 'QuantLib' in sys.modules else 0)"
     )
     assert subprocess.run([sys.executable, "-c", code], check=False).returncode == 0
+
+
+def test_option_chain_is_a_command(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        main(["option", "chain", "--help"])
+    assert exit_info.value.code == 0
+    assert "--contract-type" in capsys.readouterr().out
