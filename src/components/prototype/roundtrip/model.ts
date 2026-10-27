@@ -135,3 +135,21 @@ export function fixedDomain(values: number[], includeZero: boolean): [number, nu
   lo = lo < 0 ? Math.floor((lo * 1.04) / step(lo)) * step(lo) : 0
   return [lo, hi]
 }
+
+function actionText(point: Point): string {
+  return point.action === 'hold' ? 'Hold' : `Sell ${point.sellPct}% → ${point.action === 'sell_cash' ? 'cash' : 'shares'}`
+}
+
+/** What a valuation date is: entry, one of the path's points (with its Action), or a date the engine adds itself (the debt
+ * date, an expiry sale), whose price is read off the path rather than set by a point. */
+export function dateRole(iso: string, path: { name: string; points: Point[] }, dates: string[]): string {
+  if (iso === dates[0]) return "Entry, at today's price"
+  const point = path.points.find((p) => p.date === iso)
+  if (point) return `Point of ${path.name}: ${actionText(point)}`
+  const why = iso === '2027-11-30' ? 'Debt date' : 'Expiry sale'
+  const future = path.points.filter((p) => p.date > (dates[0] ?? ''))
+  const before = future.filter((p) => p.date < iso).at(-1)
+  const after = future.find((p) => p.date > iso)
+  const where = !after ? 'the price stays at the last point’s' : `the price is the path’s, between ${before ? `the ${fmtDate(before.date)} and ${fmtDate(after.date)} points` : `today and the ${fmtDate(after.date)} point`}`
+  return `${why}, not a point of ${path.name}: ${where}`
+}

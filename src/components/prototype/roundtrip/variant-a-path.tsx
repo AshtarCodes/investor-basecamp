@@ -11,7 +11,7 @@ import { scaleUtc } from 'd3-scale'
 
 import { Button } from '#/components/ui/button.tsx'
 import { LegLegend, type LegendItem } from './leg-legend.tsx'
-import { axisFormat, COLOR, fixedDomain, fmtDate, fmtPct, fmtSignedUsd, fmtUsd, isRecord, legColor, legLabel, legRows, pnlClass, toggleableLegs, totalRows, valueFormat, type Row } from './model.ts'
+import { axisFormat, COLOR, dateRole, fixedDomain, fmtDate, fmtPct, fmtSignedUsd, fmtUsd, isRecord, legColor, legLabel, legRows, pnlClass, toggleableLegs, totalRows, valueFormat, type Row } from './model.ts'
 import type { EngineEvent } from './types.ts'
 import type { ViewProps } from './view.ts'
 
@@ -119,7 +119,9 @@ export function VariantA({ state, update, build, paths, path, run: runOf, baseli
         use: tooltip,
         formatGroup(points: readonly { xValue: unknown; datum: unknown }[]) {
           const first = points[0]?.xValue
-          const heading = first instanceof Date ? fmtDate(first.toISOString().slice(0, 10)) : ''
+          const iso = first instanceof Date ? first.toISOString().slice(0, 10) : ''
+          const i = dates.indexOf(iso)
+          const heading = iso ? `${fmtDate(iso)} · IREN $${(run.spot[i] ?? 0).toFixed(2)}\n${dateRole(iso, path, dates)}` : ''
           return [heading, ...points.map((p) => (isRecord(p.datum) ? `${String(p.datum.series)}: ${fmt(Number(p.datum.value))}` : ''))].join('\n')
         },
       },
@@ -185,7 +187,7 @@ export function VariantA({ state, update, build, paths, path, run: runOf, baseli
           </ClientOnly>
         </div>
         <p className="mt-1 text-muted-foreground">
-          Dots on the lines are the dates the engine values (entry, each point, the debt date, each expiry sale); straight segments are not prices in between. Grey rings: the path's points. Click a date to read it on the right. Dashed grey:
+          Dots on the lines are the dates the engine values: entry, each of the path's points (grey rings, with their prices), and two kinds of date it adds itself, the debt date (2027-11-30) and each expiry sale, priced where the path is on that day. Straight segments are not prices in between. Click a date to read it on the right. Dashed grey:
           the same budget in shares only.
         </p>
         {below}
@@ -196,6 +198,7 @@ export function VariantA({ state, update, build, paths, path, run: runOf, baseli
           <h2 className="mb-1 text-sm font-semibold">
             {fmtDate(dateIso)} <span className="font-normal text-muted-foreground">IREN ${(run.spot[at] ?? 0).toFixed(2)}</span>
           </h2>
+          <p className={`mb-1 ${path.points.some((p) => p.date === dateIso) ? 'text-muted-foreground' : 'font-medium text-amber-800'}`}>{dateRole(dateIso, path, dates)}</p>
           <table className="w-full tabular-nums">
             <tbody>
               {legIds.map((id) => {
